@@ -1,0 +1,12 @@
+#/bin/env sh
+
+main() {
+  docker run --init --rm -it \
+    --platform linux/aarch64 \
+    -v /Users/sebastienlevy/workspace/github/environments:/root/environments \
+    -v /Users/sebastienlevy/workspace/trinitycore/server/TrinityCore:/root/TrinityCore \
+    -v /Users/sebastienlevy/.ssh:/root/.ssh \
+    neovim_next
+}
+
+main
