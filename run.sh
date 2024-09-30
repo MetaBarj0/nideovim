@@ -6,6 +6,7 @@ main() {
     -v /Users/sebastienlevy/workspace/github/environments:/root/environments \
     -v /Users/sebastienlevy/workspace/trinitycore/server/TrinityCore:/root/TrinityCore \
     -v /Users/sebastienlevy/.ssh:/root/.ssh \
+    --security-opt seccomp=unconfined \
     neovim_next
 }
 

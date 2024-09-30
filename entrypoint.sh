@@ -17,11 +17,16 @@ apply_neovim_config() {
   ln -s /root/environments/common/neovim/USER_HOME_DIR/.config /root/.config
 }
 
+apply_lldb_config() {
+  ln -s /root/environments/common/lldb/USER_HOME_DIR/.lldbinit /root/.lldbinit
+}
+
 main() {
   apply_git_config \
   && config_git_user \
   && authorize_github \
   && apply_neovim_config \
+  && apply_lldb_config \
   && exec bash
 }
 
