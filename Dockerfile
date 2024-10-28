@@ -32,7 +32,7 @@ RUN \
   gettext cmake ninja-build lua5.1
 WORKDIR /root
 RUN git clone --branch master --depth=1 \
- https://github.com/neovim/neovim
+  https://github.com/neovim/neovim
 WORKDIR /root/neovim
 RUN make \
   CMAKE_BUILD_TYPE=Release \
@@ -80,3 +80,4 @@ COPY entrypoint.sh .
 COPY .bashrc .
 ENV ENV=/root/.rc
 ENTRYPOINT ["/root/entrypoint.sh"]
+LABEL project="neovim_config_context"
