@@ -1,4 +1,4 @@
-FROM debian:trixie-slim AS upgraded
+FROM debian:bookworm-slim AS upgraded
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -11,14 +11,17 @@ RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends \
-  make git ca-certificates wget lsb-release software-properties-common gnupg
+  make git ca-certificates wget lsb-release software-properties-common gnupg \
+  curl
 
 FROM core_packages AS llvm
 RUN wget https://apt.llvm.org/llvm.sh \
   && chmod +x llvm.sh
 RUN ./llvm.sh 18 all
+RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-18 100
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
 RUN update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-18 100
+RUN update-alternatives --install /usr/bin/ld ld /usr/bin/lld-18 100
 RUN update-alternatives --install /usr/bin/lld lld /usr/bin/lld-18 100
 RUN update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-18 100
 
@@ -39,16 +42,31 @@ RUN make \
   CMAKE_INSTALL_PREFIX=/usr/local
 RUN make install
 
-FROM llvm AS built_packages
+FROM llvm AS install_latest_golang
 WORKDIR /root
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get install -y --no-install-recommends \
-  golang cargo
-RUN git clone --depth 1 https://github.com/jesseduffield/lazygit.git \
-  && cd lazygit \
-  && go install
+  golang
+RUN go install golang.org/dl/go1.23.3@latest
+WORKDIR /root/go/bin
+RUN ./go1.23.3 download
+
+FROM llvm AS install_latest_rust
+WORKDIR /root
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+FROM llvm AS built_packages
+WORKDIR /root
+COPY --from=install_latest_golang /root/sdk/go1.23.3/ /root/sdk/go1.23.3/
+ENV PATH=/root/sdk/go1.23.3/bin/:${PATH}
+COPY --from=install_latest_rust /root/.cargo/ /root/.cargo/
+COPY --from=install_latest_rust /root/.rustup/ /root/.rustup/
+ENV PATH=/root/.cargo/bin/:${PATH}
+RUN git clone --depth 1 https://github.com/jesseduffield/lazygit.git
+WORKDIR /root/lazygit
+RUN go install
 RUN cargo install ast-grep --locked
 
 FROM llvm AS packages
@@ -57,14 +75,14 @@ RUN \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get install -y --no-install-recommends \
   openssh-client curl unzip tar gzip tmux luarocks coreutils ripgrep \
-  lua5.1-dev nodejs npm tree-sitter-cli python3 python3-pynvim gcc fd-find \
+  lua5.1-dev nodejs npm python3 python3-pynvim gcc fd-find \
   python3-venv less
 RUN rm -rf /var/cache/apt
 
 FROM packages AS neovim_packages
 RUN \
   npm install --global \
-  npm-check-updates neovim
+  npm-check-updates neovim tree-sitter-cli
 
 FROM scratch
 COPY --from=neovim_packages / /
