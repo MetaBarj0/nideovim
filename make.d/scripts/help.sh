@@ -16,28 +16,28 @@ EOF
 
   set_print_color_light_grey
   cat <<EOF
-- help: display this message.
+- help: displays this message.
 EOF
 
   set_print_color_default
   cat <<EOF
-- build: build the docker image of this integrated development environment.
+- build: builds the docker image of this integrated development environment.
 EOF
 
   set_print_color_light_grey
   cat <<EOF
-- up: start the development environment service as a docker compose project.
+- up: starts the development environment service as a docker compose project.
 EOF
 
   set_print_color_default
   cat <<EOF
-- shell: login into the integrated development environment. To exit, press
+- shell: logs in into the integrated development environment. To exit, press
          ctrl-d.
 EOF
 
   set_print_color_light_grey
   cat <<EOF
-- down: stop the development environment service. It will turn off all
+- down: stops the development environment service. It will turn off all
         containers, keeping state into the docker compose project volumes.
 EOF
 }

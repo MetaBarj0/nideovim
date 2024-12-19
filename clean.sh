@@ -2,7 +2,7 @@ main() {
   local image_ids_get_cmd="$(
     cat <<EOF
 docker image ls -q \
-  --filter "label=project=neovim_config_context" \
+  --filter "label=project=deovim" \
   | sort | uniq
 EOF
   )"

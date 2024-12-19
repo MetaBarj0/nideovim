@@ -73,6 +73,7 @@ WORKDIR /root/lazygit
 RUN go install
 RUN cargo install ast-grep --locked
 
+# TODO: install latest node.js
 FROM llvm AS install_esential_ide_packages
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -108,11 +109,8 @@ RUN \
 FROM scratch
 COPY --from=full_upgrade_no_cache / /
 WORKDIR /root
-COPY entrypoint.sh .
-COPY .bashrc .
-ENV ENV=/root/.rc
-ENTRYPOINT ["/root/entrypoint.sh"]
-LABEL project="neovim_config_context"
+COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
+LABEL project="deovim"
 
 # TODO: extra packages specified in env?
 # TODO: dive into this image for optimization purposes

@@ -1,0 +1,40 @@
+services:
+  ide:
+    container_name: ${COMPOSE_PROJECT_NAME}_ide_container
+    entrypoint: ${USER_HOME_DIR}/.bin/ide.entrypoint.sh
+    environment:
+      - USER_HOME_DIR
+    image: ${COMPOSE_PROJECT_NAME}_ide_image
+    init: true
+    ulimits:
+      core:
+        soft: -1
+        hard: -1
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+      - type: volume
+        source: user_storage
+        target: ${USER_HOME_DIR}/ide_storage
+      - type: volume
+        source: ide_npm_prefix
+        target: ${USER_HOME_DIR}/.npm-prefix
+        volume:
+          nocopy: false
+      - type: volume
+        source: ide_npm_cache
+        target: ${USER_HOME_DIR}/.npm-cache
+        volume:
+          nocopy: false
+      - type: volume
+        source: ide_xdg_init
+        target: ${USER_HOME_DIR}/.config
+        volume:
+          nocopy: false
+      - type: volume
+        source: ide_xdg_local
+        target: ${USER_HOME_DIR}/.local
+        volume:
+          nocopy: false
