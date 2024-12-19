@@ -63,8 +63,7 @@ FROM llvm AS install_latest_rust
 WORKDIR /root
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
-# TODO: rename stage, lazygit build
-FROM llvm AS built_packages
+FROM llvm AS build_lazygit
 WORKDIR /root
 COPY --from=install_latest_golang /root/sdk/go1.23.3/ /root/sdk/go1.23.3/
 ENV PATH=/root/sdk/go1.23.3/bin/:${PATH}
@@ -76,8 +75,7 @@ WORKDIR /root/lazygit
 RUN go install
 RUN cargo install ast-grep --locked
 
-# TODO: rename stage, install essential package for IDE to work
-FROM llvm AS packages
+FROM llvm AS install_esential_ide_packages
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -87,21 +85,30 @@ RUN \
   python3-venv less
 RUN rm -rf /var/cache/apt
 
-# TODO: rename, specific npm packages
-FROM packages AS neovim_packages
+FROM install_esential_ide_packages AS install_npm_packages
 RUN \
   npm install --global \
   npm-check-updates neovim tree-sitter-cli
 
-FROM scratch
-COPY --from=neovim_packages / /
+FROM install_npm_packages AS install_neovim_and_lazygit
 COPY \
-  --from=built_packages \
+  --from=build_lazygit \
   /root/go/bin/lazygit \
   /root/.cargo/bin/sg \
   /usr/local/bin/
 COPY --from=build_neovim \
   /usr/local/ /usr/local/
+
+FROM install_neovim_and_lazygit AS full_upgrade_no_cache
+ARG CACHE_NONCE=1
+RUN \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  apt-get update \
+  && apt-get full-upgrade -y --no-install-recommends
+
+FROM scratch
+COPY --from=full_upgrade_no_cache / /
 WORKDIR /root
 COPY entrypoint.sh .
 COPY .bashrc .
@@ -109,6 +116,5 @@ ENV ENV=/root/.rc
 ENTRYPOINT ["/root/entrypoint.sh"]
 LABEL project="neovim_config_context"
 
-# TODO: build cache invalidation for update
 # TODO: extra packages specified in env?
 # TODO: dive into this image for optimization purposes
