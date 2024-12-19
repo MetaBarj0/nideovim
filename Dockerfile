@@ -15,20 +15,19 @@ RUN \
   make git ca-certificates wget lsb-release software-properties-common gnupg \
   curl
 
-# TODO: llvm 20 update? Or latest?
+# TODO: llvm 20 update? Or latest? Or in env conf?
 # TODO: rootless stage
 FROM core_packages AS llvm
 RUN wget https://apt.llvm.org/llvm.sh \
   && chmod +x llvm.sh
-RUN ./llvm.sh 18 all
-RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-18 100
-RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 100
-RUN update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-18 100
-RUN update-alternatives --install /usr/bin/ld ld /usr/bin/lld-18 100
-RUN update-alternatives --install /usr/bin/lld lld /usr/bin/lld-18 100
-RUN update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-18 100
+RUN ./llvm.sh 20 all
+RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-20 100
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 100
+RUN update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-20 100
+RUN update-alternatives --install /usr/bin/ld ld /usr/bin/lld-20 100
+RUN update-alternatives --install /usr/bin/lld lld /usr/bin/lld-20 100
+RUN update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-20 100
 
-# TODO: duplicate pkg installation
 # TODO: self built stuff as rootless
 FROM llvm AS build_neovim
 RUN \
@@ -46,8 +45,7 @@ RUN make \
   CMAKE_INSTALL_PREFIX=/usr/local
 RUN make install
 
-# TODO: rename stage name, specific golang version
-FROM llvm AS install_latest_golang
+FROM llvm AS install_golang_1_23_3
 WORKDIR /root
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -65,7 +63,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 FROM llvm AS build_lazygit
 WORKDIR /root
-COPY --from=install_latest_golang /root/sdk/go1.23.3/ /root/sdk/go1.23.3/
+COPY --from=install_golang_1_23_3 /root/sdk/go1.23.3/ /root/sdk/go1.23.3/
 ENV PATH=/root/sdk/go1.23.3/bin/:${PATH}
 COPY --from=install_latest_rust /root/.cargo/ /root/.cargo/
 COPY --from=install_latest_rust /root/.rustup/ /root/.rustup/
