@@ -40,6 +40,12 @@ EOF
 - down: stops the development environment service. It will turn off all
         containers, keeping state into the docker compose project volumes.
 EOF
+
+  set_print_color_default
+  cat <<EOF
+- clean: cleans the system of the ide docker image. It implies down. It removes
+         the image but does not clear the build cache.
+EOF
 }
 
 main

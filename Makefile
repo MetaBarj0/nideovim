@@ -10,3 +10,7 @@ help:
 
 build:
 	@. make.d/scripts/build.sh
+
+up:
+shell:
+down:
