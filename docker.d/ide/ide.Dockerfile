@@ -73,18 +73,56 @@ WORKDIR /root/lazygit
 RUN go install
 RUN cargo install ast-grep --locked
 
-# TODO: install latest node.js
 FROM llvm AS install_esential_ide_packages
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get install -y --no-install-recommends \
   openssh-client curl unzip tar gzip tmux luarocks coreutils ripgrep \
-  lua5.1-dev nodejs npm python3 python3-pynvim gcc fd-find \
+  lua5.1-dev python3 python3-pynvim gcc fd-find \
   python3-venv less
 RUN rm -rf /var/cache/apt
 
-FROM install_esential_ide_packages AS install_npm_packages
+FROM install_esential_ide_packages AS fetch_nodejs
+ARG NODEJS_VERSION
+RUN \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update \
+  && apt-get install -y --no-install-recommends \
+  wget curl jq
+WORKDIR /root
+RUN \
+  [ $(arch) = 'aarch64' ] && nodejs_arch='arm64' \
+  ; [ $(arch) = 'x86_64' ] && nodejs_arch='x64' \
+  ; [ "${NODEJS_VERSION}" != 'latest' ] \
+  && wget https://nodejs.org/dist/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-linux-${nodejs_arch}.tar.xz \
+  || ( \
+  query='sort_by(.tag_name) | reverse | .[0].tag_name' \
+  && version=$(curl -s https://api.github.com/repos/nodejs/node/releases \
+  | jq "${query}" \
+  | sed 's/"//g') \
+  && wget https://nodejs.org/dist/${version}/node-${version}-linux-${nodejs_arch}.tar.xz \
+  )
+
+FROM fetch_nodejs AS extract_nodejs
+RUN \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update \
+  && apt-get install -y --no-install-recommends \
+  xz-utils
+WORKDIR /root
+RUN tar x -f node-*-linux-*.tar.xz
+
+FROM install_esential_ide_packages AS install_nodejs
+RUN mkdir /root/.nodejs
+WORKDIR /root/.nodejs
+COPY --from=extract_nodejs /root/node-*-linux-*/ .
+ENV NODEJS_INSTALL_DIR=/root/.nodejs
+ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin
+
+FROM install_nodejs AS install_npm_packages
 RUN \
   npm install --global \
   npm-check-updates neovim tree-sitter-cli
@@ -106,11 +144,13 @@ RUN \
   apt-get update \
   && apt-get full-upgrade -y --no-install-recommends
 
-FROM scratch
+# TODO: label with COMPOSE_PROJECT_NAME
+FROM scratch AS end
 COPY --from=full_upgrade_no_cache / /
 WORKDIR /root
 COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
+ENV NODEJS_INSTALL_DIR=/root/.nodejs
+ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin
 LABEL project="deovim"
 
 # TODO: extra packages specified in env?
-# TODO: dive into this image for optimization purposes

@@ -3,3 +3,5 @@ Makefile.env:
 
 clean: down
 	@. make.d/scripts/clean.sh
+
+build: target_stage=end
