@@ -1,5 +1,6 @@
 #/bin/env sh
 
+# TODO: compose this
 main() {
   docker run --init --rm -it \
     --platform linux/aarch64 \

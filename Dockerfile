@@ -1,3 +1,4 @@
+# TODO: ideally rootless?
 FROM debian:bookworm-slim AS upgraded
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -14,6 +15,8 @@ RUN \
   make git ca-certificates wget lsb-release software-properties-common gnupg \
   curl
 
+# TODO: llvm 20 update? Or latest?
+# TODO: rootless stage
 FROM core_packages AS llvm
 RUN wget https://apt.llvm.org/llvm.sh \
   && chmod +x llvm.sh
@@ -26,6 +29,7 @@ RUN update-alternatives --install /usr/bin/lld lld /usr/bin/lld-18 100
 RUN update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-18 100
 
 # TODO: duplicate pkg installation
+# TODO: self built stuff as rootless
 FROM llvm AS build_neovim
 RUN \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -42,6 +46,7 @@ RUN make \
   CMAKE_INSTALL_PREFIX=/usr/local
 RUN make install
 
+# TODO: rename stage name, specific golang version
 FROM llvm AS install_latest_golang
 WORKDIR /root
 RUN \
@@ -53,10 +58,12 @@ RUN go install golang.org/dl/go1.23.3@latest
 WORKDIR /root/go/bin
 RUN ./go1.23.3 download
 
+# TODO: Rootless stuff here
 FROM llvm AS install_latest_rust
 WORKDIR /root
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
+# TODO: rename stage, lazygit build
 FROM llvm AS built_packages
 WORKDIR /root
 COPY --from=install_latest_golang /root/sdk/go1.23.3/ /root/sdk/go1.23.3/
@@ -69,6 +76,7 @@ WORKDIR /root/lazygit
 RUN go install
 RUN cargo install ast-grep --locked
 
+# TODO: rename stage, install essential package for IDE to work
 FROM llvm AS packages
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -79,6 +87,7 @@ RUN \
   python3-venv less
 RUN rm -rf /var/cache/apt
 
+# TODO: rename, specific npm packages
 FROM packages AS neovim_packages
 RUN \
   npm install --global \
@@ -99,3 +108,7 @@ COPY .bashrc .
 ENV ENV=/root/.rc
 ENTRYPOINT ["/root/entrypoint.sh"]
 LABEL project="neovim_config_context"
+
+# TODO: build cache invalidation for update
+# TODO: extra packages specified in env?
+# TODO: dive into this image for optimization purposes
