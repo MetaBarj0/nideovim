@@ -12,10 +12,14 @@ the latest version of `neovim`
 
 ### tooling
 
+- POSIX compliant shell
+- rev
+- cut
 - docker
   - buildx plugin
   - compose plugin
 - make
+- (optional) less
 
 ### hardware
 
