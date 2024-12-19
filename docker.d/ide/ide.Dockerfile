@@ -144,13 +144,13 @@ RUN \
   apt-get update \
   && apt-get full-upgrade -y --no-install-recommends
 
-# TODO: label with COMPOSE_PROJECT_NAME
 FROM scratch AS end
+ARG COMPOSE_PROJECT_NAME=deovim
 COPY --from=full_upgrade_no_cache / /
 WORKDIR /root
 COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
 ENV NODEJS_INSTALL_DIR=/root/.nodejs
 ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin
-LABEL project="deovim"
+LABEL project=${COMPOSE_PROJECT_NAME}
 
 # TODO: extra packages specified in env?

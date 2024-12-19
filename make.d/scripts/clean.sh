@@ -3,7 +3,7 @@ main() {
   image_ids_get_cmd="$(
     cat <<EOF
 docker image ls -q \
-  --filter "label=project=deovim" \
+  --filter "label=project=${COMPOSE_PROJECT_NAME}" \
   | sort | uniq
 EOF
   )"
