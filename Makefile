@@ -8,6 +8,9 @@ export
 help:
 	@. make.d/scripts/help.sh
 
+init:
+	@. make.d/scripts/init.sh
+
 build:
 	@. make.d/scripts/build.sh
 

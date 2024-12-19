@@ -1,3 +1,4 @@
+# TODO: init target to ease Ux
 # TODO: ideally rootless?
 FROM debian:bookworm-slim AS upgraded
 RUN \

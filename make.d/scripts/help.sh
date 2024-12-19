@@ -1,10 +1,4 @@
-set_print_color_default() {
-  printf '\033[0;0m'
-}
-
-set_print_color_light_grey() {
-  printf '\033[1;37m'
-}
+. make.d/lib.d/color.sh
 
 main() {
   set_print_color_default
@@ -21,27 +15,34 @@ EOF
 
   set_print_color_default
   cat <<EOF
-- build: builds the docker image of this integrated development environment.
+- init: starts the interactive initialization feature for this project. You
+        will have several question to answer. Once you've finished, you will be
+        able to run any make target described below.
 EOF
 
   set_print_color_light_grey
   cat <<EOF
-- up: starts the development environment service as a docker compose project.
+- build: builds the docker image of this integrated development environment.
 EOF
 
   set_print_color_default
+  cat <<EOF
+- up: starts the development environment service as a docker compose project.
+EOF
+
+  set_print_color_light_grey
   cat <<EOF
 - shell: logs in into the integrated development environment. To exit, press
          ctrl-d.
 EOF
 
-  set_print_color_light_grey
+  set_print_color_default
   cat <<EOF
 - down: stops the development environment service. It will turn off all
         containers, keeping state into the docker compose project volumes.
 EOF
 
-  set_print_color_default
+  set_print_color_light_grey
   cat <<EOF
 - clean: cleans the system of the ide docker image. It implies down. It removes
          the image but does not clear the build cache.

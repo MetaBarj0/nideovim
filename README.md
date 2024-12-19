@@ -19,6 +19,8 @@ the latest version of `neovim`
   - buildx plugin
   - compose plugin
 - make
+- command
+- GNU sed
 - (optional) less
 
 ### hardware
