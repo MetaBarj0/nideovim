@@ -1,4 +1,3 @@
-# TODO: init target to ease Ux
 # TODO: ideally rootless?
 FROM debian:bookworm-slim AS upgraded
 RUN \
@@ -16,18 +15,18 @@ RUN \
   make git ca-certificates wget lsb-release software-properties-common gnupg \
   curl
 
-# TODO: llvm 20 update? Or latest? Or in env conf?
 # TODO: rootless stage
 FROM core_packages AS llvm
+ARG LLVM_VERSION=18
 RUN wget https://apt.llvm.org/llvm.sh \
   && chmod +x llvm.sh
-RUN ./llvm.sh 20 all
-RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-20 100
-RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 100
-RUN update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-20 100
-RUN update-alternatives --install /usr/bin/ld ld /usr/bin/lld-20 100
-RUN update-alternatives --install /usr/bin/lld lld /usr/bin/lld-20 100
-RUN update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-20 100
+RUN ./llvm.sh ${LLVM_VERSION} all
+RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-${LLVM_VERSION} 100
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM_VERSION} 100
+RUN update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-${LLVM_VERSION} 100
+RUN update-alternatives --install /usr/bin/ld ld /usr/bin/lld-${LLVM_VERSION} 100
+RUN update-alternatives --install /usr/bin/lld lld /usr/bin/lld-${LLVM_VERSION} 100
+RUN update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-${LLVM_VERSION} 100
 
 # TODO: self built stuff as rootless
 FROM llvm AS build_neovim
