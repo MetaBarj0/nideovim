@@ -5,3 +5,6 @@ clean: down
 	@. make.d/scripts/clean.sh
 
 build: target_stage=end
+
+config:
+	@. make.d/scripts/config.sh

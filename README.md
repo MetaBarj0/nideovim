@@ -38,3 +38,4 @@ the latest version of `neovim`
 # TODO
 
 - think about a way to link this project with the `environment` repository
+- pseudo-rootless mode

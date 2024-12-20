@@ -47,6 +47,12 @@ EOF
 - clean: cleans the system of the ide docker image. It implies down. It removes
          the image but does not clear the build cache.
 EOF
+
+  set_print_color_default
+  cat <<EOF
+- config: check the docker compose file correctness. If everything is good,
+          returns 0 and print the content of the compose.yaml file on stdout.
+EOF
 }
 
 main

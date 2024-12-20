@@ -15,26 +15,5 @@ services:
         source: /var/run/docker.sock
         target: /var/run/docker.sock
         read_only: true
-      - type: volume
-        source: user_storage
-        target: ${USER_HOME_DIR}/ide_storage
-      - type: volume
-        source: ide_npm_prefix
-        target: ${USER_HOME_DIR}/.npm-prefix
-        volume:
-          nocopy: false
-      - type: volume
-        source: ide_npm_cache
-        target: ${USER_HOME_DIR}/.npm-cache
-        volume:
-          nocopy: false
-      - type: volume
-        source: ide_xdg_init
-        target: ${USER_HOME_DIR}/.config
-        volume:
-          nocopy: false
-      - type: volume
-        source: ide_xdg_local
-        target: ${USER_HOME_DIR}/.local
-        volume:
-          nocopy: false
+      - type: tmpfs
+        target: /tmp

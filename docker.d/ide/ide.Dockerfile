@@ -1,4 +1,3 @@
-# TODO: ideally rootless?
 FROM debian:bookworm-slim AS upgraded
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -15,7 +14,6 @@ RUN \
   make git ca-certificates wget lsb-release software-properties-common gnupg \
   curl
 
-# TODO: rootless stage
 FROM core_packages AS llvm
 ARG LLVM_VERSION=18
 RUN wget https://apt.llvm.org/llvm.sh \
@@ -28,8 +26,9 @@ RUN update-alternatives --install /usr/bin/ld ld /usr/bin/lld-${LLVM_VERSION} 10
 RUN update-alternatives --install /usr/bin/lld lld /usr/bin/lld-${LLVM_VERSION} 100
 RUN update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-${LLVM_VERSION} 100
 
-# TODO: self built stuff as rootless
-FROM llvm AS build_neovim
+FROM llvm AS setup_rootless
+
+FROM setup_rootless AS build_neovim
 RUN \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -56,7 +55,6 @@ RUN go install golang.org/dl/go1.23.3@latest
 WORKDIR /root/go/bin
 RUN ./go1.23.3 download
 
-# TODO: Rootless stuff here
 FROM llvm AS install_latest_rust
 WORKDIR /root
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
