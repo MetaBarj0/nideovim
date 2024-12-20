@@ -15,5 +15,7 @@ build:
 	@. make.d/scripts/build.sh
 
 up:
+	@. make.d/scripts/up.sh
+
 shell:
 down:
