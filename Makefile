@@ -18,4 +18,7 @@ up:
 	@. make.d/scripts/up.sh
 
 shell:
+	@. make.d/scripts/shell.sh
+
 down:
+	@. make.d/scripts/down.sh

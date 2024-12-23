@@ -8,3 +8,6 @@ build: target_stage=end
 
 config:
 	@. make.d/scripts/config.sh
+
+ps:
+	@. make.d/scripts/ps.sh

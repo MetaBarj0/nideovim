@@ -53,6 +53,11 @@ EOF
 - config: check the docker compose file correctness. If everything is good,
           returns 0 and print the content of the compose.yaml file on stdout.
 EOF
+
+  set_print_color_light_grey
+  cat <<EOF
+- ps: get the running status of services for this compose project
+EOF
 }
 
 main
