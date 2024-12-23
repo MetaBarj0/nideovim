@@ -26,51 +26,6 @@ RUN update-alternatives --install /usr/bin/ld ld /usr/bin/lld-${LLVM_VERSION} 10
 RUN update-alternatives --install /usr/bin/lld lld /usr/bin/lld-${LLVM_VERSION} 100
 RUN update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-${LLVM_VERSION} 100
 
-FROM llvm AS setup_rootless
-
-FROM setup_rootless AS build_neovim
-RUN \
-  --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  apt-get update \
-  && apt-get install -y --no-install-recommends \
-  gettext cmake ninja-build lua5.1
-WORKDIR /root
-RUN git clone --branch master --depth=1 \
-  https://github.com/neovim/neovim
-WORKDIR /root/neovim
-RUN make \
-  CMAKE_BUILD_TYPE=Release \
-  CMAKE_INSTALL_PREFIX=/usr/local
-RUN make install
-
-FROM llvm AS install_golang_1_23_3
-WORKDIR /root
-RUN \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  apt-get install -y --no-install-recommends \
-  golang
-RUN go install golang.org/dl/go1.23.3@latest
-WORKDIR /root/go/bin
-RUN ./go1.23.3 download
-
-FROM llvm AS install_latest_rust
-WORKDIR /root
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-
-FROM llvm AS build_lazygit
-WORKDIR /root
-COPY --from=install_golang_1_23_3 /root/sdk/go1.23.3/ /root/sdk/go1.23.3/
-ENV PATH=/root/sdk/go1.23.3/bin/:${PATH}
-COPY --from=install_latest_rust /root/.cargo/ /root/.cargo/
-COPY --from=install_latest_rust /root/.rustup/ /root/.rustup/
-ENV PATH=/root/.cargo/bin/:${PATH}
-RUN git clone --depth 1 https://github.com/jesseduffield/lazygit.git
-WORKDIR /root/lazygit
-RUN go install
-RUN cargo install ast-grep --locked
-
 FROM llvm AS install_esential_ide_packages
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -125,16 +80,71 @@ RUN \
   npm install --global \
   npm-check-updates neovim tree-sitter-cli
 
-FROM install_npm_packages AS install_neovim_and_lazygit
+FROM install_esential_ide_packages AS setup_rootless
+
+FROM setup_rootless AS build_neovim
+RUN \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  apt-get update \
+  && apt-get install -y --no-install-recommends \
+  gettext cmake ninja-build lua5.1
+WORKDIR /root
+RUN git clone --branch master --depth=1 \
+  https://github.com/neovim/neovim
+WORKDIR /root/neovim
+RUN make \
+  CMAKE_BUILD_TYPE=Release \
+  CMAKE_INSTALL_PREFIX=/usr/local
+RUN make install
+
+FROM setup_rootless AS install_golang_1_23_3
+WORKDIR /root
+RUN \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  apt-get install -y --no-install-recommends \
+  golang
+RUN go install golang.org/dl/go1.23.3@latest
+WORKDIR /root/go/bin
+RUN ./go1.23.3 download
+
+FROM setup_rootless AS install_latest_rust
+WORKDIR /root
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+FROM setup_rootless AS build_lazygit
+WORKDIR /root
+COPY --from=install_golang_1_23_3 /root/sdk/go1.23.3/ /root/sdk/go1.23.3/
+ENV PATH=/root/sdk/go1.23.3/bin/:${PATH}
+COPY --from=install_latest_rust /root/.cargo/ /root/.cargo/
+COPY --from=install_latest_rust /root/.rustup/ /root/.rustup/
+ENV PATH=/root/.cargo/bin/:${PATH}
+RUN git clone --depth 1 https://github.com/jesseduffield/lazygit.git
+WORKDIR /root/lazygit
+RUN go install
+RUN cargo install ast-grep --locked
+
+FROM setup_rootless AS build_fzf
+WORKDIR /root
+COPY --from=install_golang_1_23_3 /root/sdk/go1.23.3/ /root/sdk/go1.23.3/
+ENV PATH=/root/sdk/go1.23.3/bin/:${PATH}
+RUN git clone --branch=master --depth=1 https://github.com/junegunn/fzf.git
+WORKDIR /root/fzf
+RUN FZF_VERSION=HEAD FZF_REVISION=HEAD make install
+
+FROM install_npm_packages AS install_built_oss
 COPY \
   --from=build_lazygit \
   /root/go/bin/lazygit \
   /root/.cargo/bin/sg \
   /usr/local/bin/
+COPY --from=build_fzf \
+  /root/fzf/bin/fzf* /usr/local/bin/
 COPY --from=build_neovim \
   /usr/local/ /usr/local/
 
-FROM install_neovim_and_lazygit AS install_docker_cli
+FROM install_built_oss AS install_docker_cli
 # docker installation for debian
 # see:
 # https://docs.docker.com/engine/install/debian/#install-using-the-repository
