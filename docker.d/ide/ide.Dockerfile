@@ -1,4 +1,4 @@
-FROM debian:bookworm-slim AS upgraded
+FROM debian:stable-slim AS upgraded
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -173,5 +173,3 @@ COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
 ENV NODEJS_INSTALL_DIR=/root/.nodejs
 ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin
 LABEL project=${COMPOSE_PROJECT_NAME}
-
-# TODO: extra packages specified in env?
