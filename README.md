@@ -1,7 +1,7 @@
 # deovim
 
 This is an Integrated Development Environment (`IDE`) based on Linux Debian and
-the latest version of `neovim`
+the latest version of `neovim` (tip of the `master` branch)
 
 ## prerequisites
 
@@ -22,6 +22,9 @@ the latest version of `neovim`
 - command
 - GNU sed
 - (optional) less
+
+Generally speaking, a recent linux distribution or MacOS should do the job.
+For MacOS, ensure to install `gsed` using Homebrew for instance.
 
 ### hardware
 
