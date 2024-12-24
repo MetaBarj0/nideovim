@@ -18,3 +18,16 @@ services:
         read_only: true
       - type: tmpfs
         target: /tmp
+      - type: volume
+        source: user_config
+        target: ${USER_HOME_DIR:-/root}/.config
+        volume:
+          nocopy: false
+      - type: volume
+        source: user_local
+        target: ${USER_HOME_DIR:-/root}/.local
+        volume:
+          nocopy: false
+volumes:
+  user_config:
+  user_local:

@@ -254,8 +254,10 @@ COPY --from=full_upgrade_no_cache / /
 WORKDIR ${USER_HOME_DIR}
 COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
 RUN chown -R ${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}
+USER ${USER_NAME}
+RUN mkdir -p .config .local
+RUN touch .config/.volume .local/.volume
 ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
 ENV NEOVIM_INSTALL_DIR=${USER_HOME_DIR}/.neovim
 ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin:${NEOVIM_INSTALL_DIR}/bin:${USER_HOME_DIR}/.bin
 LABEL project=${COMPOSE_PROJECT_NAME}
-USER ${USER_NAME}
