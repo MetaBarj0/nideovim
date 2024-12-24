@@ -14,7 +14,31 @@ RUN \
   make git ca-certificates wget lsb-release software-properties-common gnupg \
   curl
 
-FROM core_packages AS llvm
+FROM core_packages AS install_docker_cli
+# docker installation for debian
+# see:
+# https://docs.docker.com/engine/install/debian/#install-using-the-repository
+RUN \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  apt-get update \
+  && apt-get install -y --no-install-recommends ca-certificates curl gnupg
+RUN install -m 0755 -d /etc/apt/keyrings
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+RUN chmod a+r /etc/apt/keyrings/docker.gpg
+RUN echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  tee /etc/apt/sources.list.d/docker.list > /dev/null
+RUN \
+  --mount=type=cache,target=/var/cache/apt,sharing=locked \
+  --mount=type=cache,target=/var/lib/apt,sharing=locked \
+  apt-get update \
+  && apt-get install -y --no-install-recommends \
+  docker-ce-cli docker-buildx-plugin docker-compose-plugin
+# Adding the docker group manually
+
+FROM install_docker_cli AS llvm
 ARG LLVM_VERSION=18
 RUN wget https://apt.llvm.org/llvm.sh \
   && chmod +x llvm.sh
@@ -26,7 +50,7 @@ RUN update-alternatives --install /usr/bin/ld ld /usr/bin/lld-${LLVM_VERSION} 10
 RUN update-alternatives --install /usr/bin/lld lld /usr/bin/lld-${LLVM_VERSION} 100
 RUN update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-${LLVM_VERSION} 100
 
-FROM llvm AS install_esential_ide_packages
+FROM llvm AS install_essential_ide_packages
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -36,15 +60,50 @@ RUN \
   python3-venv less
 RUN rm -rf /var/cache/apt
 
-FROM install_esential_ide_packages AS fetch_nodejs
+FROM install_essential_ide_packages AS setup_rootless
+ARG ROOTLESS=0
+ARG USER_GID=0
+ARG USER_NAME=root
+ARG USER_HOME_DIR=/root
+ARG USER_UID=0
+RUN <<EOF
+  prepare_docker_group() {
+    groupadd -o -g ${USER_GID} docker
+  }
+
+  add_non_root_user() {
+    useradd \
+      -d ${USER_HOME_DIR} \
+      -m -s /bin/bash -G docker \
+      -u ${USER_UID} \
+      ${USER_NAME}
+  }
+
+  main() {
+    if [ ${ROOTLESS} -eq 0 ]; then
+      exit 0
+    else
+      prepare_docker_group &&
+        add_non_root_user
+    fi
+  }
+
+  main
+EOF
+
+FROM setup_rootless AS fetch_nodejs
 ARG NODEJS_VERSION
+ARG USER_NAME=root
+ARG USER_HOME_DIR=/root
+USER root
 RUN \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends \
   wget curl jq
-WORKDIR /root
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}}
 RUN \
   [ $(arch) = 'aarch64' ] && nodejs_arch='arm64' \
   ; [ $(arch) = 'x86_64' ] && nodejs_arch='x64' \
@@ -59,18 +118,25 @@ RUN \
   )
 
 FROM fetch_nodejs AS extract_nodejs
+ARG USER_NAME=root
+ARG USER_HOME_DIR=/root
+USER root
 RUN \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends \
   xz-utils
-WORKDIR /root
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}
 RUN tar x -f node-*-linux-*.tar.xz
 
-FROM install_esential_ide_packages AS install_nodejs
-RUN mkdir /root/.nodejs
-WORKDIR /root/.nodejs
+FROM setup_rootless AS install_nodejs
+ARG USER_NAME=root
+ARG USER_HOME_DIR=/root
+USER ${USER_NAME}
+RUN mkdir ${USER_HOME_DIR}/.nodejs
+WORKDIR ${USER_HOME_DIR}/.nodejs
 COPY --from=extract_nodejs /root/node-*-linux-*/ .
 ENV NODEJS_INSTALL_DIR=/root/.nodejs
 ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin
@@ -79,8 +145,6 @@ FROM install_nodejs AS install_npm_packages
 RUN \
   npm install --global \
   npm-check-updates neovim tree-sitter-cli
-
-FROM install_esential_ide_packages AS setup_rootless
 
 FROM setup_rootless AS build_neovim
 RUN \
@@ -144,30 +208,7 @@ COPY --from=build_fzf \
 COPY --from=build_neovim \
   /usr/local/ /usr/local/
 
-FROM install_built_oss AS install_docker_cli
-# docker installation for debian
-# see:
-# https://docs.docker.com/engine/install/debian/#install-using-the-repository
-RUN \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates curl gnupg
-RUN install -m 0755 -d /etc/apt/keyrings
-RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-RUN chmod a+r /etc/apt/keyrings/docker.gpg
-RUN echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-  tee /etc/apt/sources.list.d/docker.list > /dev/null
-RUN \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  apt-get update \
-  && apt-get install -y --no-install-recommends \
-  docker-ce-cli docker-buildx-plugin docker-compose-plugin
-
-FROM install_docker_cli AS full_upgrade_no_cache
+FROM install_built_oss AS full_upgrade_no_cache
 ARG CACHE_NONCE=1
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \

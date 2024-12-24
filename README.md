@@ -15,7 +15,7 @@ the latest version of `neovim`
 - POSIX compliant shell
 - rev
 - cut
-- docker
+- docker (either native or Docker Desktop or Orbstack)
   - buildx plugin
   - compose plugin
 - make
@@ -37,7 +37,6 @@ the latest version of `neovim`
 
 # TODO
 
-- pseudo-rootless mode
 - a way to get this project extensible:
   - sensible and simple way to specify a custom base image (today, only
     debian:stable-slim is supported)
