@@ -12,24 +12,24 @@ clone_repository() {
 install_files() {
   cd /tmp/environments || return $?
 
-  rm -rf /root/.bash*
-  cp -r common/bash/USER_HOME_DIR/.bash* /root/
+  rm -rf ${USER_HOME_DIR}/.bash*
+  cp -r common/bash/USER_HOME_DIR/.bash* ${USER_HOME_DIR}/
 
-  rm -rf /root/.gitconfig
-  cp -r common/git/USER_HOME_DIR/.gitconfig /root/
+  rm -rf ${USER_HOME_DIR}/.gitconfig
+  cp -r common/git/USER_HOME_DIR/.gitconfig ${USER_HOME_DIR}/
 
-  rm -rf /root/.config
-  cp -r common/neovim/USER_HOME_DIR/.config /root/
-  cp -r common/tmux/USER_HOME_DIR/.config/tmux/ /root/.config/
+  rm -rf ${USER_HOME_DIR}/.config
+  cp -r common/neovim/USER_HOME_DIR/.config ${USER_HOME_DIR}/
+  cp -r common/tmux/USER_HOME_DIR/.config/tmux/ ${USER_HOME_DIR}/.config/
 
-  rm -rf /root/.npmrc
-  cp -r common/nodejs/USER_HOME_DIR/.npmrc /root/
+  rm -rf ${USER_HOME_DIR}/.npmrc
+  cp -r common/nodejs/USER_HOME_DIR/.npmrc ${USER_HOME_DIR}/
 }
 
 initialize_environment() {
   clone_repository &&
     install_files &&
-    touch /root/.environments_installed
+    touch ${USER_HOME_DIR}/.environments_installed
 }
 
 run_live_loop() {

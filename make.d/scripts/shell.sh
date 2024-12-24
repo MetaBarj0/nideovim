@@ -7,10 +7,18 @@ container_is_running() {
   [ -n "${container_id}" ]
 }
 
+get_user_home_dir() {
+  if [ "${ROOTLESS}" -eq 0 ]; then
+    echo /root
+  else
+    echo "${NON_ROOT_USER_HOME_DIR}"
+  fi
+}
+
 environments_installed() {
   docker exec -it \
     "${COMPOSE_PROJECT_NAME}_ide_container" \
-    bash -c '[ -f /root/.environments_installed ]'
+    bash -c "[ -f $(get_user_home_dir)/.environments_installed ]"
 }
 
 main() {

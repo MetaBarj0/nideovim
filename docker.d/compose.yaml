@@ -1,10 +1,11 @@
 services:
   ide:
-    container_name: ${COMPOSE_PROJECT_NAME}_ide_container
-    entrypoint: /root/.bin/ide.entrypoint.sh
+    container_name: ${COMPOSE_PROJECT_NAME:-deovim}_ide_container
+    entrypoint: ${USER_HOME_DIR:-/root}/.bin/ide.entrypoint.sh
     environment:
+      - COMPOSE_PROJECT_NAME
       - USER_HOME_DIR
-    image: ${COMPOSE_PROJECT_NAME}_ide_image
+    image: ${COMPOSE_PROJECT_NAME:-deovim}_ide_image
     init: true
     ulimits:
       core:

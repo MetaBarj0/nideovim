@@ -39,7 +39,7 @@ RUN \
 # Adding the docker group manually
 
 FROM install_docker_cli AS llvm
-ARG LLVM_VERSION=18
+ARG LLVM_VERSION=19
 RUN wget https://apt.llvm.org/llvm.sh \
   && chmod +x llvm.sh
 RUN ./llvm.sh ${LLVM_VERSION} all
@@ -63,8 +63,8 @@ RUN rm -rf /var/cache/apt
 FROM install_essential_ide_packages AS setup_rootless
 ARG ROOTLESS=0
 ARG USER_GID=0
-ARG USER_NAME=root
 ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
 ARG USER_UID=0
 RUN <<EOF
   prepare_docker_group() {
@@ -93,8 +93,8 @@ EOF
 
 FROM setup_rootless AS fetch_nodejs
 ARG NODEJS_VERSION
-ARG USER_NAME=root
 ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
 USER root
 RUN \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -103,7 +103,7 @@ RUN \
   && apt-get install -y --no-install-recommends \
   wget curl jq
 USER ${USER_NAME}
-WORKDIR ${USER_HOME_DIR}}
+WORKDIR ${USER_HOME_DIR}
 RUN \
   [ $(arch) = 'aarch64' ] && nodejs_arch='arm64' \
   ; [ $(arch) = 'x86_64' ] && nodejs_arch='x64' \
@@ -118,8 +118,8 @@ RUN \
   )
 
 FROM fetch_nodejs AS extract_nodejs
-ARG USER_NAME=root
 ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
 USER root
 RUN \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -132,84 +132,113 @@ WORKDIR ${USER_HOME_DIR}
 RUN tar x -f node-*-linux-*.tar.xz
 
 FROM setup_rootless AS install_nodejs
-ARG USER_NAME=root
 ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
 USER ${USER_NAME}
 RUN mkdir ${USER_HOME_DIR}/.nodejs
 WORKDIR ${USER_HOME_DIR}/.nodejs
-COPY --from=extract_nodejs /root/node-*-linux-*/ .
-ENV NODEJS_INSTALL_DIR=/root/.nodejs
+COPY --from=extract_nodejs ${USER_HOME_DIR}/node-*-linux-*/ .
+ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
 ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin
 
 FROM install_nodejs AS install_npm_packages
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER ${USER_NAME}
 RUN \
   npm install --global \
-  npm-check-updates neovim tree-sitter-cli
+    npm-check-updates neovim tree-sitter-cli
 
 FROM setup_rootless AS build_neovim
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER root
 RUN \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends \
   gettext cmake ninja-build lua5.1
-WORKDIR /root
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}
 RUN git clone --branch master --depth=1 \
   https://github.com/neovim/neovim
-WORKDIR /root/neovim
+WORKDIR ${USER_HOME_DIR}/neovim
 RUN make \
   CMAKE_BUILD_TYPE=Release \
-  CMAKE_INSTALL_PREFIX=/usr/local
+  CMAKE_INSTALL_PREFIX=${USER_HOME_DIR}/.neovim
 RUN make install
 
 FROM setup_rootless AS install_golang_1_23_3
-WORKDIR /root
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER root
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get install -y --no-install-recommends \
   golang
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}
 RUN go install golang.org/dl/go1.23.3@latest
-WORKDIR /root/go/bin
+WORKDIR ${USER_HOME_DIR}/go/bin
 RUN ./go1.23.3 download
 
 FROM setup_rootless AS install_latest_rust
-WORKDIR /root
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 FROM setup_rootless AS build_lazygit
-WORKDIR /root
-COPY --from=install_golang_1_23_3 /root/sdk/go1.23.3/ /root/sdk/go1.23.3/
-ENV PATH=/root/sdk/go1.23.3/bin/:${PATH}
-COPY --from=install_latest_rust /root/.cargo/ /root/.cargo/
-COPY --from=install_latest_rust /root/.rustup/ /root/.rustup/
-ENV PATH=/root/.cargo/bin/:${PATH}
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}
+COPY --from=install_golang_1_23_3 --chown=${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}/sdk/go1.23.3/ ${USER_HOME_DIR}/sdk/go1.23.3/
+ENV PATH=${USER_HOME_DIR}/sdk/go1.23.3/bin/:${PATH}
+COPY --from=install_latest_rust --chown=${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}/.cargo/ ${USER_HOME_DIR}/.cargo/
+COPY --from=install_latest_rust --chown=${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}/.rustup/ ${USER_HOME_DIR}/.rustup/
+ENV PATH=${USER_HOME_DIR}/.cargo/bin/:${PATH}
 RUN git clone --depth 1 https://github.com/jesseduffield/lazygit.git
-WORKDIR /root/lazygit
+WORKDIR ${USER_HOME_DIR}/lazygit
 RUN go install
 RUN cargo install ast-grep --locked
 
 FROM setup_rootless AS build_fzf
-WORKDIR /root
-COPY --from=install_golang_1_23_3 /root/sdk/go1.23.3/ /root/sdk/go1.23.3/
-ENV PATH=/root/sdk/go1.23.3/bin/:${PATH}
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}
+COPY --from=install_golang_1_23_3 --chown=${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}/sdk/go1.23.3/ ${USER_HOME_DIR}/sdk/go1.23.3/
+ENV PATH=${USER_HOME_DIR}/sdk/go1.23.3/bin/:${PATH}
 RUN git clone --branch=master --depth=1 https://github.com/junegunn/fzf.git
-WORKDIR /root/fzf
+WORKDIR ${USER_HOME_DIR}/fzf
 RUN FZF_VERSION=HEAD FZF_REVISION=HEAD make install
 
 FROM install_npm_packages AS install_built_oss
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}
+RUN mkdir .bin
 COPY \
   --from=build_lazygit \
-  /root/go/bin/lazygit \
-  /root/.cargo/bin/sg \
-  /usr/local/bin/
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/go/bin/lazygit \
+  ${USER_HOME_DIR}/.cargo/bin/sg \
+  ${USER_HOME_DIR}/.bin
 COPY --from=build_fzf \
-  /root/fzf/bin/fzf* /usr/local/bin/
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/fzf/bin/fzf* ${USER_HOME_DIR}/.bin
 COPY --from=build_neovim \
-  /usr/local/ /usr/local/
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/.neovim ${USER_HOME_DIR}/.neovim/
 
 FROM install_built_oss AS full_upgrade_no_cache
 ARG CACHE_NONCE=1
+USER root
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -218,9 +247,15 @@ RUN \
 
 FROM scratch AS end
 ARG COMPOSE_PROJECT_NAME=deovim
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER root
 COPY --from=full_upgrade_no_cache / /
-WORKDIR /root
+WORKDIR ${USER_HOME_DIR}
 COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
-ENV NODEJS_INSTALL_DIR=/root/.nodejs
-ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin
+RUN chown -R ${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}
+ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
+ENV NEOVIM_INSTALL_DIR=${USER_HOME_DIR}/.neovim
+ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin:${NEOVIM_INSTALL_DIR}/bin:${USER_HOME_DIR}/.bin
 LABEL project=${COMPOSE_PROJECT_NAME}
+USER ${USER_NAME}
