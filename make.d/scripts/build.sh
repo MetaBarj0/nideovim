@@ -41,6 +41,7 @@ main() {
     --build-arg USER_HOME_DIR="$(get_user_home_dir)" \
     --build-arg USER_NAME="$(get_user_name)" \
     --build-arg USER_UID="$(get_user_uid)" \
+    --build-arg VOLUME_DIR_NAME="${VOLUME_DIR_NAME}" \
     --target="${target_stage?}" \
     -t "${COMPOSE_PROJECT_NAME}"_ide_image \
     -f docker.d/ide/ide.Dockerfile \

@@ -39,6 +39,8 @@ prepare_volumes() {
 
   rm -f .config/.volume
   rm -f .local/.volume
+  rm -f tmp/.volume
+  rm -f "${VOLUME_DIR_NAME}/.volume"
 }
 
 run_live_loop() {

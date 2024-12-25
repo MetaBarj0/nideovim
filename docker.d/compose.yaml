@@ -5,8 +5,13 @@ services:
     environment:
       - COMPOSE_PROJECT_NAME
       - USER_HOME_DIR
+      - VOLUME_DIR_NAME
+      - TERM=xterm-256color
     image: ${COMPOSE_PROJECT_NAME:-deovim}_ide_image
     init: true
+    post_start:
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/tmp
+        user: root
     ulimits:
       core:
         soft: -1
@@ -18,6 +23,10 @@ services:
         read_only: true
       - type: tmpfs
         target: /tmp
+      - type: tmpfs
+        target: ${USER_HOME_DIR:-/root}/tmp
+        volume:
+          nocopy: false
       - type: volume
         source: user_config
         target: ${USER_HOME_DIR:-/root}/.config
@@ -28,6 +37,12 @@ services:
         target: ${USER_HOME_DIR:-/root}/.local
         volume:
           nocopy: false
+      - type: volume
+        source: workspace
+        target: ${USER_HOME_DIR:-/root}/${VOLUME_DIR_NAME:-workspace}
+        volume:
+          nocopy: false
 volumes:
   user_config:
   user_local:
+  workspace:

@@ -245,18 +245,20 @@ RUN \
   apt-get update \
   && apt-get full-upgrade -y --no-install-recommends
 
+# TODO: design an optimize image feature to speed up image building at development stages
 FROM scratch AS end
 ARG COMPOSE_PROJECT_NAME=deovim
 ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
+ARG VOLUME_DIR_NAME=workspace
 USER root
 COPY --from=full_upgrade_no_cache / /
 WORKDIR ${USER_HOME_DIR}
 COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
 RUN chown -R ${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}
 USER ${USER_NAME}
-RUN mkdir -p .config .local
-RUN touch .config/.volume .local/.volume
+RUN mkdir -p .config .local tmp ${VOLUME_DIR_NAME}
+RUN touch .config/.volume .local/.volume tmp/.volume ${VOLUME_DIR_NAME}/.volume
 ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
 ENV NEOVIM_INSTALL_DIR=${USER_HOME_DIR}/.neovim
 ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin:${NEOVIM_INSTALL_DIR}/bin:${USER_HOME_DIR}/.bin

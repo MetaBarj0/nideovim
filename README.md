@@ -32,11 +32,12 @@ For MacOS, ensure to install `gsed` using Homebrew for instance.
 
 ## how to use?
 
-1. build the `IDE` with the `make build` command.
-2. start the `IDE` with the `make up` command.
-3. use the `IDE` with the `make shell` command.
-4. shutdown with the `make down` command.
-5. getting some help with the `make help` command.
+1. configure the project interactively with the `make init` command.
+2. build the `IDE` with the `make build` command.
+3. start the `IDE` with the `make up` command.
+4. use the `IDE` with the `make shell` command.
+5. shutdown with the `make down` command.
+6. getting some help with the `make help` command.
 
 # TODO
 
