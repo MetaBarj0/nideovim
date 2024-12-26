@@ -34,6 +34,8 @@ initialize_environment() {
     touch ${USER_HOME_DIR}/.environments_installed
 }
 
+# TODO: use post_start hook to setup volume, it'll simplify the image
+#       construction and entrypoint logic
 prepare_volumes() {
   cd "${USER_HOME_DIR}" || return $?
 
@@ -41,6 +43,19 @@ prepare_volumes() {
   rm -f .local/.volume
   rm -f tmp/.volume
   rm -f "${VOLUME_DIR_NAME}/.volume"
+}
+
+setup_ssh_authentication() {
+  cd "${USER_HOME_DIR}" || return $?
+
+  mkdir .ssh
+  chmod 0755 .ssh
+
+  cat /run/secrets/ssh_public_key_file > .ssh/id_rsa.pub
+  chmod 0444 .ssh/id_rsa.pub
+
+  cat /run/secrets/ssh_secret_key_file > .ssh/id_rsa
+  chmod 0400 .ssh/id_rsa
 }
 
 run_live_loop() {
@@ -52,6 +67,7 @@ run_live_loop() {
 main() {
   initialize_environment &&
     prepare_volumes &&
+    setup_ssh_authentication &&
     run_live_loop
 }
 

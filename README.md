@@ -41,7 +41,6 @@ For MacOS, ensure to install `gsed` using Homebrew for instance.
 
 # TODO
 
-- ssh secrets, configurable
 - a way to get this project extensible:
   - sensible and simple way to specify a custom base image (today, only
     debian:stable-slim is supported)

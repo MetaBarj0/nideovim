@@ -1,17 +1,28 @@
+secrets:
+  ssh_public_key_file:
+    file: ${SSH_PUBLIC_KEY_FILE:-~/.ssh/id_rsa.pub}
+  ssh_secret_key_file:
+    file: ${SSH_SECRET_KEY_FILE:-~/.ssh/id_rsa}
 services:
   ide:
     container_name: ${COMPOSE_PROJECT_NAME:-nideovim}_ide_container
     entrypoint: ${USER_HOME_DIR:-/root}/.bin/ide.entrypoint.sh
     environment:
       - COMPOSE_PROJECT_NAME
+      - LC_ALL=en_US.UTF-8
+      - TERM=xterm-256color
       - USER_HOME_DIR
       - VOLUME_DIR_NAME
-      - TERM=xterm-256color
     image: ${COMPOSE_PROJECT_NAME:-nideovim}_ide_image
     init: true
     post_start:
       - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/tmp
         user: root
+    secrets:
+      - source: ssh_public_key_file
+        target: /run/secrets/ssh_public_key_file
+      - source: ssh_secret_key_file
+        target: /run/secrets/ssh_secret_key_file
     ulimits:
       core:
         soft: -1

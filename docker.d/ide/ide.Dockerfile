@@ -56,11 +56,15 @@ RUN \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get install -y --no-install-recommends \
   openssh-client curl unzip tar gzip tmux luarocks coreutils ripgrep \
-  lua5.1-dev python3 python3-pynvim gcc fd-find \
-  python3-venv less
+  lua5.1-dev python3 python3-pynvim gcc fd-find python3-venv less procps btop \
+  tig locales
 RUN rm -rf /var/cache/apt
 
-FROM install_essential_ide_packages AS setup_rootless
+FROM install_essential_ide_packages AS install_system_locales
+RUN echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen
+RUN locale-gen
+
+FROM install_system_locales AS setup_rootless
 ARG ROOTLESS=0
 ARG USER_GID=0
 ARG USER_HOME_DIR=/root
