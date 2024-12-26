@@ -151,7 +151,7 @@ ARG USER_NAME=root
 USER ${USER_NAME}
 RUN \
   npm install --global \
-    npm-check-updates neovim tree-sitter-cli
+  npm-check-updates neovim tree-sitter-cli
 
 FROM setup_rootless AS build_neovim
 ARG USER_HOME_DIR=/root
@@ -232,7 +232,7 @@ COPY \
   --chown=${USER_NAME}:${USER_NAME} \
   ${USER_HOME_DIR}/go/bin/lazygit \
   ${USER_HOME_DIR}/.cargo/bin/sg \
-  ${USER_HOME_DIR}/.bin
+  ${USER_HOME_DIR}/.bin/
 COPY --from=build_fzf \
   --chown=${USER_NAME}:${USER_NAME} \
   ${USER_HOME_DIR}/fzf/bin/fzf* ${USER_HOME_DIR}/.bin
