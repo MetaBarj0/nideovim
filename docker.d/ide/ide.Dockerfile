@@ -141,7 +141,10 @@ ARG USER_NAME=root
 USER ${USER_NAME}
 RUN mkdir ${USER_HOME_DIR}/.nodejs
 WORKDIR ${USER_HOME_DIR}/.nodejs
-COPY --from=extract_nodejs ${USER_HOME_DIR}/node-*-linux-*/ .
+COPY \
+  --from=extract_nodejs \
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/node-*-linux-*/ .
 ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
 ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin
 
@@ -200,10 +203,19 @@ ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 USER ${USER_NAME}
 WORKDIR ${USER_HOME_DIR}
-COPY --from=install_golang_1_23_3 --chown=${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}/sdk/go1.23.3/ ${USER_HOME_DIR}/sdk/go1.23.3/
+COPY \
+  --from=install_golang_1_23_3 \
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/sdk/go1.23.3/ ${USER_HOME_DIR}/sdk/go1.23.3/
 ENV PATH=${USER_HOME_DIR}/sdk/go1.23.3/bin/:${PATH}
-COPY --from=install_latest_rust --chown=${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}/.cargo/ ${USER_HOME_DIR}/.cargo/
-COPY --from=install_latest_rust --chown=${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}/.rustup/ ${USER_HOME_DIR}/.rustup/
+COPY \
+  --from=install_latest_rust \
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/.cargo/ ${USER_HOME_DIR}/.cargo/
+COPY \
+  --from=install_latest_rust \
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/.rustup/ ${USER_HOME_DIR}/.rustup/
 ENV PATH=${USER_HOME_DIR}/.cargo/bin/:${PATH}
 RUN git clone --depth 1 https://github.com/jesseduffield/lazygit.git
 WORKDIR ${USER_HOME_DIR}/lazygit
@@ -215,7 +227,10 @@ ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 USER ${USER_NAME}
 WORKDIR ${USER_HOME_DIR}
-COPY --from=install_golang_1_23_3 --chown=${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}/sdk/go1.23.3/ ${USER_HOME_DIR}/sdk/go1.23.3/
+COPY \
+  --from=install_golang_1_23_3 \
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/sdk/go1.23.3/ ${USER_HOME_DIR}/sdk/go1.23.3/
 ENV PATH=${USER_HOME_DIR}/sdk/go1.23.3/bin/:${PATH}
 RUN git clone --branch=master --depth=1 https://github.com/junegunn/fzf.git
 WORKDIR ${USER_HOME_DIR}/fzf
@@ -259,7 +274,6 @@ USER root
 COPY --from=full_upgrade_no_cache / /
 WORKDIR ${USER_HOME_DIR}
 COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
-RUN chown -R ${USER_NAME}:${USER_NAME} ${USER_HOME_DIR}
 USER ${USER_NAME}
 ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
 ENV NEOVIM_INSTALL_DIR=${USER_HOME_DIR}/.neovim
