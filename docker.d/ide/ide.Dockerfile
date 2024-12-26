@@ -247,7 +247,7 @@ RUN \
 
 # TODO: design an optimize image feature to speed up image building at development stages
 FROM scratch AS end
-ARG COMPOSE_PROJECT_NAME=deovim
+ARG COMPOSE_PROJECT_NAME=nideovim
 ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 ARG VOLUME_DIR_NAME=workspace

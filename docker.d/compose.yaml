@@ -1,13 +1,13 @@
 services:
   ide:
-    container_name: ${COMPOSE_PROJECT_NAME:-deovim}_ide_container
+    container_name: ${COMPOSE_PROJECT_NAME:-nideovim}_ide_container
     entrypoint: ${USER_HOME_DIR:-/root}/.bin/ide.entrypoint.sh
     environment:
       - COMPOSE_PROJECT_NAME
       - USER_HOME_DIR
       - VOLUME_DIR_NAME
       - TERM=xterm-256color
-    image: ${COMPOSE_PROJECT_NAME:-deovim}_ide_image
+    image: ${COMPOSE_PROJECT_NAME:-nideovim}_ide_image
     init: true
     post_start:
       - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/tmp

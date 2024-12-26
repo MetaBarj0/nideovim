@@ -4,12 +4,12 @@ print_init_header() {
   set_print_color_default
 
   cat <<EOF
-=========================deovim initialization facility=========================
+========================nideovim initialization facility========================
 
   Welcome in the initializer facility.
 
   You'll be asked several questions for you to answer in order to initialize
-  all general settings of your deovim project instance.
+  all general settings of your nideovim project instance.
 
   Each question is explained and has an overridable default value specified
   between square brackets.
@@ -294,7 +294,7 @@ ask_questions_for_file() {
 report_init_done() {
   cat <<EOF
 
-The initialization of this deovim project instance is now complete.
+The initialization of this nideovim project instance is now complete.
 You may build, launch and log in to you ide service by issuing: \`make shell\`.
 EOF
 }
