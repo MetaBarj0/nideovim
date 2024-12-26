@@ -16,7 +16,15 @@ services:
     image: ${COMPOSE_PROJECT_NAME:-nideovim}_ide_image
     init: true
     post_start:
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/.config
+        user: root
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/.local
+        user: root
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/.ssh
+        user: root
       - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/tmp
+        user: root
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/${VOLUME_DIR_NAME:-workspace}
         user: root
     secrets:
       - source: ssh_public_key_file
@@ -49,6 +57,11 @@ services:
         volume:
           nocopy: false
       - type: volume
+        source: user_ssh_dir
+        target: ${USER_HOME_DIR:-/root}/.ssh
+        volume:
+          nocopy: false
+      - type: volume
         source: workspace
         target: ${USER_HOME_DIR:-/root}/${VOLUME_DIR_NAME:-workspace}
         volume:
@@ -56,4 +69,5 @@ services:
 volumes:
   user_config:
   user_local:
+  user_ssh_dir:
   workspace:
