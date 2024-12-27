@@ -264,14 +264,12 @@ RUN \
   apt-get update \
   && apt-get full-upgrade -y --no-install-recommends
 
-# TODO: design an optimize image feature to speed up image building at development stages
-FROM scratch AS end
+# `end` stage name is important as it is the only stage name allowing image to be optimized
+FROM full_upgrade_no_cache AS end
 ARG COMPOSE_PROJECT_NAME=nideovim
 ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 ARG VOLUME_DIR_NAME=workspace
-USER root
-COPY --from=full_upgrade_no_cache / /
 WORKDIR ${USER_HOME_DIR}
 COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
 USER ${USER_NAME}

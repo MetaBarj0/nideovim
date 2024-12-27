@@ -5,6 +5,7 @@ clean: down
 	@. make.d/scripts/clean.sh
 
 build: target_stage=end
+build: build_type=unoptimized
 
 config:
 	@. make.d/scripts/config.sh

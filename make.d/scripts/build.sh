@@ -30,7 +30,7 @@ get_user_uid() {
   fi
 }
 
-main() {
+build_unoptimized_image() {
   docker build \
     --build-arg CACHE_NONCE="$(date +%s)" \
     --build-arg COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}" \
@@ -44,8 +44,34 @@ main() {
     --build-arg VOLUME_DIR_NAME="${VOLUME_DIR_NAME}" \
     --target="${target_stage?}" \
     -t "${COMPOSE_PROJECT_NAME}"_ide_image \
-    -f docker.d/ide/ide.Dockerfile \
+    -f docker.d/ide/ide.unoptimized.Dockerfile \
     docker.d/ide
+}
+
+try_to_optimize_image() {
+  if [ "${build_type}" != 'optimized' ]; then
+    return 0
+  fi
+
+  if [ "${target_stage}" != 'end' ]; then
+    return 0
+  fi
+
+  docker build \
+    --build-arg COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}" \
+    --build-arg ROOTLESS="${ROOTLESS}" \
+    --build-arg USER_HOME_DIR="$(get_user_home_dir)" \
+    --build-arg USER_NAME="$(get_user_name)" \
+    --build-arg VOLUME_DIR_NAME="${VOLUME_DIR_NAME}" \
+    --target="${target_stage?}" \
+    -t "${COMPOSE_PROJECT_NAME}"_ide_image \
+    -f docker.d/ide/ide.optimized.Dockerfile \
+    docker.d/ide
+}
+
+main() {
+  build_unoptimized_image &&
+    try_to_optimize_image
 }
 
 main

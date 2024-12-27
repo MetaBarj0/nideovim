@@ -23,6 +23,9 @@ EOF
   set_print_color_light_grey
   cat <<EOF
 - build: builds the docker image of this integrated development environment.
+         This target behavior can be customized using variables. See below
+         about which variables and values they can have to custome your ide
+         image build.
 EOF
 
   set_print_color_default
@@ -57,6 +60,48 @@ EOF
   set_print_color_light_grey
   cat <<EOF
 - ps: get the running status of services for this compose project
+EOF
+
+  set_print_color_default
+  cat <<EOF
+
+Specific target variables:
+
+EOF
+
+  set_print_color_light_grey
+  cat <<EOF
+- build: below are the \`build\` specific variables you can use to custom the
+         ide service docker image build.
+EOF
+
+  set_print_color_default
+  cat <<EOF
+  - target_stage: This variable specifies the final target to use in order to
+    build the ide service docker image. It can be useful to debug or test the
+    image build process without having to complete the build until the very
+    last build stage. See in the file
+    \`docker.d/ide/ide.unoptimized.Dockerfile\` for all build stages.
+    Note that specifying an build stage other than \`end\` in this variable
+    prevents the built image to be optimized.
+    Default value: end
+EOF
+
+  set_print_color_light_grey
+  cat <<EOF
+  - build_type: This variable specifies the build type of the ide service
+                docker image.
+                Default value: unoptimized
+                This variable can have two distincts values:
+    - unoptimized: the \`build\` target will produce an unoptimized image. Such
+                   an image is not flattened and can contains some
+                   inefficiencies such as duplicated data wetween layers.
+                   The advantage is faster build time and reusable build cache
+                   content.
+    - optimized: the \`build\` target will produce an optimized image. Such an
+                 image is flattend thus do not contain any duplicated data.
+                 The advantage of such an image is its readiness to be
+                 published but it is longer to build.
 EOF
 }
 
