@@ -83,12 +83,18 @@ RUN <<EOF
       ${USER_NAME}
   }
 
+  setup_sudo() {
+    apt install -y --no-install-recommends sudo
+    echo "${USER_NAME}	ALL=(ALL:ALL) NOPASSWD:	ALL" > "/etc/sudoers.d/${USER_NAME}"
+  }
+
   main() {
     if [ ${ROOTLESS} -eq 0 ]; then
       exit 0
     else
       prepare_docker_group &&
-        add_non_root_user
+        add_non_root_user &&
+        setup_sudo
     fi
   }
 
@@ -276,4 +282,5 @@ USER ${USER_NAME}
 ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
 ENV NEOVIM_INSTALL_DIR=${USER_HOME_DIR}/.neovim
 ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin:${NEOVIM_INSTALL_DIR}/bin:${USER_HOME_DIR}/.bin
+ENV EDITOR=nvim
 LABEL project=${COMPOSE_PROJECT_NAME}

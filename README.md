@@ -39,7 +39,7 @@ For MacOS, ensure to install `gsed` using Homebrew for instance.
 5. shutdown with the `make down` command.
 6. getting some help with the `make help` command.
 
-# TODO
+## TODO
 
 - a way to get this project extensible:
   - sensible and simple way to specify a custom base image (today, only
