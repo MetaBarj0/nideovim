@@ -20,6 +20,8 @@ services:
         user: root
       - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/.local
         user: root
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/.npm-prefix
+        user: root
       - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/.ssh
         user: root
       - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/tmp
@@ -44,8 +46,6 @@ services:
         target: /tmp
       - type: tmpfs
         target: ${USER_HOME_DIR:-/root}/tmp
-        volume:
-          nocopy: false
       - type: volume
         source: user_config
         target: ${USER_HOME_DIR:-/root}/.config
@@ -54,6 +54,16 @@ services:
       - type: volume
         source: user_local
         target: ${USER_HOME_DIR:-/root}/.local
+        volume:
+          nocopy: false
+      - type: volume
+        source: user_npm_cache
+        target: ${USER_HOME_DIR:-/root}/.npm-cache
+        volume:
+          nocopy: false
+      - type: volume
+        source: user_npm_prefix
+        target: ${USER_HOME_DIR:-/root}/.npm-prefix
         volume:
           nocopy: false
       - type: volume
@@ -69,5 +79,7 @@ services:
 volumes:
   user_config:
   user_local:
+  user_npm_cache:
+  user_npm_prefix:
   user_ssh_dir:
   workspace:

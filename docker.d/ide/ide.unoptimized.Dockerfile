@@ -57,7 +57,7 @@ RUN \
   apt-get install -y --no-install-recommends \
   openssh-client curl unzip tar gzip tmux luarocks coreutils ripgrep \
   lua5.1-dev python3 python3-pynvim gcc fd-find python3-venv less procps btop \
-  tig locales
+  tig locales python3-pip
 RUN rm -rf /var/cache/apt
 
 FROM install_essential_ide_packages AS install_system_locales
@@ -139,28 +139,64 @@ RUN \
   xz-utils
 USER ${USER_NAME}
 WORKDIR ${USER_HOME_DIR}
-RUN tar x -f node-*-linux-*.tar.xz
+RUN mkdir .nodejs
+RUN tar x \
+  --directory=.nodejs \
+  --strip-components=1 \
+  --wildcards \
+  -f node-*-linux-*.tar.xz \
+  node-*-linux-*/bin/node \
+  node-*-linux-*/include \
+  node-*-linux-*/share \
+  node-*-linux-*/CHANGELOG.md \
+  --exclude */*/CHANGELOG.md \
+  node-*-linux-*/README.md \
+  --exclude */*/README.md \
+  node-*-linux-*/LICENSE \
+  --exclude */*/LICENSE
+RUN mkdir .npm-prefix
+RUN tar x \
+  --directory=.npm-prefix \
+  --strip-components=1 \
+  --wildcards \
+  -f node-*-linux-*.tar.xz \
+  node-*-linux-*/bin/corepack \
+  node-*-linux-*/bin/npm \
+  node-*-linux-*/bin/npx \
+  node-*-linux-*/lib
+RUN rm -f node-*-linux-*.tar.xz
 
 FROM setup_rootless AS install_nodejs
 ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 USER ${USER_NAME}
-RUN mkdir ${USER_HOME_DIR}/.nodejs
-WORKDIR ${USER_HOME_DIR}/.nodejs
+WORKDIR ${USER_HOME_DIR}
+RUN mkdir .nodejs .npm-prefix
 COPY \
   --from=extract_nodejs \
   --chown=${USER_NAME}:${USER_NAME} \
-  ${USER_HOME_DIR}/node-*-linux-*/ .
+  ${USER_HOME_DIR}/.nodejs/ .nodejs/
+COPY \
+  --from=extract_nodejs \
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/.npm-prefix/ .npm-prefix/
 ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
-ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin
+ENV NPM_PREFIX_DIR=${USER_HOME_DIR}/.npm-prefix
+ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin:${NPM_PREFIX_DIR}/bin
 
 FROM install_nodejs AS install_npm_packages
 ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 USER ${USER_NAME}
 RUN \
+  --mount=type=tmpfs,target=/tmp \
+  npm config set cache ${USER_HOME_DIR}/.npm-cache \
+  && npm config set prefix ${USER_HOME_DIR}/.npm-prefix
+RUN \
+  --mount=type=tmpfs,target=/tmp \
   npm install --global \
   npm-check-updates neovim tree-sitter-cli
+RUN rm -rf ${USER_HOME_DIR}/.npm
 
 FROM setup_rootless AS build_neovim
 ARG USER_HOME_DIR=/root
@@ -280,7 +316,8 @@ WORKDIR ${USER_HOME_DIR}
 COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
 USER ${USER_NAME}
 ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
+ENV NPM_PREFIX_DIR=${USER_HOME_DIR}/.npm-prefix
 ENV NEOVIM_INSTALL_DIR=${USER_HOME_DIR}/.neovim
-ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin:${NEOVIM_INSTALL_DIR}/bin:${USER_HOME_DIR}/.bin
+ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin:${NPM_PREFIX_DIR}/bin:${NEOVIM_INSTALL_DIR}/bin:${USER_HOME_DIR}/.bin:${USER_HOME_DIR}/.npm-prefix/bin
 ENV EDITOR=nvim
 LABEL project=${COMPOSE_PROJECT_NAME}

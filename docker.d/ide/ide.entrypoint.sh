@@ -1,7 +1,7 @@
 #!/bin/env sh
 
 clone_repository() {
-  cd /tmp || return $?
+  cd "${USER_HOME_DIR}/tmp" || return $?
 
   rm -rf environments
 
@@ -10,7 +10,7 @@ clone_repository() {
 }
 
 install_files() {
-  cd /tmp/environments || return $?
+  cd "${USER_HOME_DIR}/tmp/environments" || return $?
 
   rm -rf ${USER_HOME_DIR}/.bashd
   rm -rf ${USER_HOME_DIR}/.bashrc
