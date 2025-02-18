@@ -7,7 +7,7 @@ export
 
 MAKEFLAGS += --no-print-directory
 
-help::
+help:: Makefile.env
 	@. make.d/scripts/help.sh
 
 init:
