@@ -1,4 +1,4 @@
-. make.d/lib.d/color.sh
+. "${NIDEOVIM_MAKEFILE_DIR:-.}/make.d/lib.d/color.sh"
 
 print_init_header() {
   set_print_color_default
