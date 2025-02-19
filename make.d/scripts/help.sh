@@ -82,8 +82,9 @@ EOF
     image build process without having to complete the build until the very
     last build stage. See in the file
     \`docker.d/ide/ide.unoptimized.Dockerfile\` for all build stages.
-    Note that specifying an build stage other than \`end\` in this variable
-    prevents the built image to be optimized.
+    Note that specifying a build stage other than \`end\` in this variable
+    prevents the built image to be optimized even if you set the \`build_type\`
+    variable value to \`optimized\`.
     Default value: end
 EOF
 
@@ -95,13 +96,14 @@ EOF
                 This variable can have two distincts values:
     - unoptimized: the \`build\` target will produce an unoptimized image. Such
                    an image is not flattened and can contains some
-                   inefficiencies such as duplicated data wetween layers.
+                   inefficiencies such as duplicated data between layers.
                    The advantage is faster build time and reusable build cache
                    content.
     - optimized: the \`build\` target will produce an optimized image. Such an
                  image is flattend thus do not contain any duplicated data.
                  The advantage of such an image is its readiness to be
-                 published but it is longer to build.
+                 published but it is longer to build and does not produce
+                 reusable build cache.
 EOF
 }
 
