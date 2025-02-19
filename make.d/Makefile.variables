@@ -1,0 +1,7 @@
+MAKEFILE_DIR := $(shell dirname $(MAKEFILE_LIST))
+
+ifeq ($(MAKELEVEL), 0)
+	undefine COMPOSE_PROJECT_NAME
+endif
+
+include Makefile.env

@@ -105,7 +105,7 @@ format_section_declarations() {
     headerless_section="$(echo "${section}" | "$(my_sed)" -n '5,$ p')"
 
   echo "${headerless_section}" |
-    "$(my_sed)" -E 's/(^[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*$)/\1=\2/'
+    "$(my_sed)" -E 's/(^[A-Za-z_][A-Za-z0-9_]*)\s*\?=\s*(.*$)/\1?=\2/'
 }
 
 get_top_question_last_line_index() {
@@ -179,14 +179,14 @@ get_question_variable_name() {
   local body="$1"
 
   get_question_variable_definition "${body}" |
-    "$(my_sed)" -E 's/(^[^=]+)=.*/\1/'
+    "$(my_sed)" -E 's/(^[A-Z_][A-Za-z0-9_]*)\?=.*/\1/'
 }
 
 get_question_variable_value() {
   local body="$1"
 
   get_question_variable_definition "${body}" |
-    "$(my_sed)" -E 's/^[^=]+=(.*)/\1/'
+    "$(my_sed)" -E 's/^[A-Z_][A-Za-z0-9_]*\?=(.*)/\1/'
 }
 
 update_variable_in_file() {
@@ -195,7 +195,7 @@ update_variable_in_file() {
   local variable_value="$3"
 
   "$(my_sed)" -E -i \
-    "s%^${variable_name}\s*=\s*.*\$%${variable_name}=${variable_value}%" \
+    "s%^${variable_name}\s*\?=\s*.*\$%${variable_name} ?= ${variable_value}%" \
     "${file}"
 }
 

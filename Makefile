@@ -1,7 +1,5 @@
-MAKEFILE_DIR := $(shell dirname $(MAKEFILE_LIST))
-
+include make.d/Makefile.variables
 include make.d/Makefile.targets
-include Makefile.env
 
 export
 
