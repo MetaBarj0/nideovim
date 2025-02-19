@@ -1,4 +1,3 @@
-# TODO: de-duplicate this export variables code
 export_project_name() {
   export COMPOSE_PROJECT_NAME
 }
@@ -22,6 +21,5 @@ main() {
   export_variables &&
     docker compose -f docker.d/compose.yaml config
 }
-
 
 main
