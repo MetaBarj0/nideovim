@@ -64,18 +64,26 @@ EOF
 
   set_print_color_default
   cat <<EOF
+- nuke: stops the development environment service. It will turn off all
+        containers but it also removes all state into the docker compose
+        project volumes. As dangerous as it suggests. Only for mushroom
+        hardcore fans.
+EOF
+
+  set_print_color_light_grey
+  cat <<EOF
 
 Specific target variables:
 
 EOF
 
-  set_print_color_light_grey
+  set_print_color_default
   cat <<EOF
 - build: below are the \`build\` specific variables you can use to custom the
          ide service docker image build.
 EOF
 
-  set_print_color_default
+  set_print_color_light_grey
   cat <<EOF
   - target_stage: This variable specifies the final target to use in order to
     build the ide service docker image. It can be useful to debug or test the
@@ -88,7 +96,7 @@ EOF
     Default value: end
 EOF
 
-  set_print_color_light_grey
+  set_print_color_default
   cat <<EOF
   - build_type: This variable specifies the build type of the ide service
                 docker image.

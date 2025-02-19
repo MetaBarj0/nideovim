@@ -12,3 +12,7 @@ config:
 
 ps:
 	@. make.d/scripts/ps.sh
+
+nuke: down_removes_volumes=yes
+nuke:
+	@. make.d/scripts/down.sh
