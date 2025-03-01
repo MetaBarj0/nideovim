@@ -39,17 +39,8 @@ For MacOS, ensure to install `gsed` using Homebrew for instance.
 5. shutdown with the `make down` command.
 6. getting some help with the `make help` command.
 
-## TODO
+## nideovim-based projects
 
-- a way to get this project extensible:
-  - sensible and simple way to specify a custom base image (today, only
-    debian:stable-slim is supported)
-    - By specifying an external `Dockerfile` as well as a script to build it
-      and a set of arguments to call the specified  build script?
-  - sensible and simple way to extend the ide service docker image with
-    supplemental tooling for other purposes.
-    - By specifying an external `Dockerfile` as well as a script to build it
-      and a set of arguments to call the specified  build script?
-  - Prepare a directory structure
-    - for the custom base image
-    - for the custom resulting image
+[nideovim_react](https://github.com/MetaBarj0/nideovim_react.git) gather all
+`nideovim` offers and extends it to facilitate react/next application
+development
