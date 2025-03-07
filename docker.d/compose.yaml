@@ -13,6 +13,7 @@ services:
       - TERM=xterm-256color
       - USER_HOME_DIR
       - VOLUME_DIR_NAME
+    hostname: ${COMPOSE_PROJECT_NAME:-nideovim}
     image: ${COMPOSE_PROJECT_NAME:-nideovim}_ide_image
     init: true
     post_start:
