@@ -1,5 +1,6 @@
 ARG COMPOSE_PROJECT_NAME=nideovim
 
+# hadolint ignore=DL3006
 FROM ${COMPOSE_PROJECT_NAME}_ide_image AS unoptimized_ide_image
 
 # `end` stage name is important as it is the only stage name allowing image to be optimized

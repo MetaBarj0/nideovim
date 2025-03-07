@@ -1,3 +1,4 @@
+# hadolint global ignore=DL3008,DL3016
 FROM debian:stable-slim AS upgraded
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -24,8 +25,10 @@ RUN \
   apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates curl gnupg
 RUN install -m 0755 -d /etc/apt/keyrings
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 RUN chmod a+r /etc/apt/keyrings/docker.gpg
+# hadolint ignore=SC1091
 RUN echo \
   "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
   "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
@@ -40,15 +43,17 @@ RUN \
 
 FROM install_docker_cli AS llvm
 ARG LLVM_VERSION=19
-RUN wget https://apt.llvm.org/llvm.sh \
+RUN wget --quiet https://apt.llvm.org/llvm.sh \
   && chmod +x llvm.sh
-RUN ./llvm.sh ${LLVM_VERSION} all
-RUN update-alternatives --install /usr/bin/cc cc /usr/bin/clang-${LLVM_VERSION} 100
-RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM_VERSION} 100
-RUN update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-${LLVM_VERSION} 100
-RUN update-alternatives --install /usr/bin/ld ld /usr/bin/lld-${LLVM_VERSION} 100
-RUN update-alternatives --install /usr/bin/lld lld /usr/bin/lld-${LLVM_VERSION} 100
-RUN update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-${LLVM_VERSION} 100
+RUN <<EOF
+  ./llvm.sh ${LLVM_VERSION} all
+  update-alternatives --install /usr/bin/cc cc /usr/bin/clang-${LLVM_VERSION} 100
+  update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM_VERSION} 100
+  update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-${LLVM_VERSION} 100
+  update-alternatives --install /usr/bin/ld ld /usr/bin/lld-${LLVM_VERSION} 100
+  update-alternatives --install /usr/bin/lld lld /usr/bin/lld-${LLVM_VERSION} 100
+  update-alternatives --install /usr/bin/lldb-dap lldb-dap /usr/bin/lldb-dap-${LLVM_VERSION} 100
+EOF
 
 FROM llvm AS install_essential_ide_packages
 RUN \
@@ -61,8 +66,8 @@ RUN \
 RUN rm -rf /var/cache/apt
 
 FROM install_essential_ide_packages AS install_system_locales
-RUN echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen
-RUN locale-gen
+RUN echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen \
+  && locale-gen
 
 FROM install_system_locales AS setup_rootless
 ARG ROOTLESS=0
@@ -77,6 +82,7 @@ RUN <<EOF
 
   add_non_root_user() {
     useradd \
+      -l \
       -d ${USER_HOME_DIR} \
       -m -s /bin/bash -G docker \
       -u ${USER_UID} \
@@ -84,7 +90,7 @@ RUN <<EOF
   }
 
   setup_sudo() {
-    apt install -y --no-install-recommends sudo
+    apt-get install -y --no-install-recommends sudo
     echo "${USER_NAME}	ALL=(ALL:ALL) NOPASSWD:	ALL" > "/etc/sudoers.d/${USER_NAME}"
   }
 
@@ -102,7 +108,7 @@ RUN <<EOF
 EOF
 
 FROM setup_rootless AS fetch_nodejs
-ARG NODEJS_VERSION
+ARG NODEJS_VERSION=latest
 ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 USER root
@@ -114,17 +120,20 @@ RUN \
   wget curl jq
 USER ${USER_NAME}
 WORKDIR ${USER_HOME_DIR}
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# LINT: I know, not a problem here
+# hadolint ignore=SC2015
 RUN \
   [ $(arch) = 'aarch64' ] && nodejs_arch='arm64' \
   ; [ $(arch) = 'x86_64' ] && nodejs_arch='x64' \
   ; [ "${NODEJS_VERSION}" != 'latest' ] \
-  && wget https://nodejs.org/dist/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-linux-${nodejs_arch}.tar.xz \
+  && curl -O "https://nodejs.org/dist/v${NODEJS_VERSION}/node-v${NODEJS_VERSION}-linux-${nodejs_arch}.tar.xz" \
   || ( \
   query='sort_by(.tag_name) | reverse | .[0].tag_name' \
-  && version=$(curl -s https://api.github.com/repos/nodejs/node/releases \
+  && version=$(curl -s "https://api.github.com/repos/nodejs/node/releases" \
   | jq "${query}" \
   | sed 's/"//g') \
-  && wget https://nodejs.org/dist/${version}/node-${version}-linux-${nodejs_arch}.tar.xz \
+  && curl -O "https://nodejs.org/dist/${version}/node-${version}-linux-${nodejs_arch}.tar.xz" \
   )
 
 FROM fetch_nodejs AS extract_nodejs
@@ -140,31 +149,38 @@ RUN \
 USER ${USER_NAME}
 WORKDIR ${USER_HOME_DIR}
 RUN mkdir .nodejs
-RUN tar x \
-  --directory=.nodejs \
-  --strip-components=1 \
-  --wildcards \
-  -f node-*-linux-*.tar.xz \
-  node-*-linux-*/bin/node \
-  node-*-linux-*/include \
-  node-*-linux-*/share \
-  node-*-linux-*/CHANGELOG.md \
-  --exclude */*/CHANGELOG.md \
-  node-*-linux-*/README.md \
-  --exclude */*/README.md \
-  node-*-linux-*/LICENSE \
-  --exclude */*/LICENSE
-RUN mkdir .npm-prefix
-RUN tar x \
-  --directory=.npm-prefix \
-  --strip-components=1 \
-  --wildcards \
-  -f node-*-linux-*.tar.xz \
-  node-*-linux-*/bin/corepack \
-  node-*-linux-*/bin/npm \
-  node-*-linux-*/bin/npx \
-  node-*-linux-*/lib
-RUN rm -f node-*-linux-*.tar.xz
+# LINT: Not an issue here
+# hadolint ignore=SC2035
+RUN <<EOF
+  tar x \
+    --directory=.nodejs \
+    --strip-components=1 \
+    --wildcards \
+    -f node-*-linux-*.tar.xz \
+    node-*-linux-*/bin/node \
+    node-*-linux-*/include \
+    node-*-linux-*/share \
+    node-*-linux-*/CHANGELOG.md \
+    --exclude */*/CHANGELOG.md \
+    node-*-linux-*/README.md \
+    --exclude */*/README.md \
+    node-*-linux-*/LICENSE \
+    --exclude */*/LICENSE
+
+  mkdir .npm-prefix
+
+  tar x \
+    --directory=.npm-prefix \
+    --strip-components=1 \
+    --wildcards \
+    -f node-*-linux-*.tar.xz \
+    node-*-linux-*/bin/corepack \
+    node-*-linux-*/bin/npm \
+    node-*-linux-*/bin/npx \
+    node-*-linux-*/lib
+
+  rm -f node-*-linux-*.tar.xz
+EOF
 
 FROM setup_rootless AS install_nodejs
 ARG USER_HOME_DIR=/root
@@ -215,8 +231,8 @@ RUN git clone --branch master --depth=1 \
 WORKDIR ${USER_HOME_DIR}/neovim
 RUN make \
   CMAKE_BUILD_TYPE=Release \
-  CMAKE_INSTALL_PREFIX=${USER_HOME_DIR}/.neovim
-RUN make install
+  CMAKE_INSTALL_PREFIX=${USER_HOME_DIR}/.neovim \
+  && make install
 
 FROM setup_rootless AS install_golang_1_23_3
 ARG USER_HOME_DIR=/root
@@ -238,6 +254,7 @@ ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 USER ${USER_NAME}
 WORKDIR ${USER_HOME_DIR}
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 FROM setup_rootless AS build_lazygit
@@ -261,8 +278,8 @@ COPY \
 ENV PATH=${USER_HOME_DIR}/.cargo/bin/:${PATH}
 RUN git clone --depth 1 https://github.com/jesseduffield/lazygit.git
 WORKDIR ${USER_HOME_DIR}/lazygit
-RUN go install
-RUN cargo install ast-grep --locked
+RUN go install \
+  && cargo install ast-grep --locked
 
 FROM setup_rootless AS build_fzf
 ARG USER_HOME_DIR=/root
