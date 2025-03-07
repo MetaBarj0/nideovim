@@ -299,14 +299,28 @@ COPY --from=build_neovim \
 
 FROM install_built_oss AS full_upgrade_no_cache
 ARG CACHE_NONCE=1
+ARG USER_NAME=root
 USER root
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get update \
   && apt-get full-upgrade -y --no-install-recommends
+USER ${USER_NAME}
 
-# `end` stage name is important as it is the only stage name allowing image to be optimized
+FROM full_upgrade_no_cache AS install_configuration
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}
+RUN mkdir configuration
+COPY configuration configuration/
+RUN find -- configuration/*/USER_HOME_DIR \
+  -maxdepth 1 -not -name 'USER_HOME_DIR' \
+  -exec cp -r {} ${USER_HOME_DIR} ';'
+
+# `end` stage name is important as it is the only stage name allowing image to
+# be optimized
 FROM full_upgrade_no_cache AS end
 ARG COMPOSE_PROJECT_NAME=nideovim
 ARG USER_HOME_DIR=/root
@@ -315,6 +329,23 @@ ARG VOLUME_DIR_NAME=workspace
 WORKDIR ${USER_HOME_DIR}
 COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
 USER ${USER_NAME}
+COPY --from=install_configuration \
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/.bashrc \
+  ${USER_HOME_DIR}/.gitconfig \
+  ${USER_HOME_DIR}/.lldbinit \
+  ${USER_HOME_DIR}/.npmrc \
+  ${USER_HOME_DIR}/
+RUN mkdir -p .bashd .config
+COPY --from=install_configuration \
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/.bashd/ .bashd/
+COPY --from=install_configuration \
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/.config/ .config/
+# Ensuring correct ownership for those directories especially for rootless
+# configurations
+RUN mkdir .ssh .local
 ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
 ENV NPM_PREFIX_DIR=${USER_HOME_DIR}/.npm-prefix
 ENV NEOVIM_INSTALL_DIR=${USER_HOME_DIR}/.neovim

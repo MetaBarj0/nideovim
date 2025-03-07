@@ -1,0 +1,8 @@
+require("config.lazy")
+require("config.editor")
+require("config.lsp")
+require("config.easymotion")
+require("config.easyalign")
+require("config.dispatch")
+require("config.dap")
+require("config.treesitter")
