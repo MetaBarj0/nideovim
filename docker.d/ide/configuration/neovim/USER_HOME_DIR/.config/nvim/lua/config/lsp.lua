@@ -17,9 +17,15 @@ require("lspconfig").denols.setup({
 
 require("conform").setup({
 	formatters_by_ft = {
-		typescript = { "deno_fmt" },
-		javascript = { "deno_fmt" },
-		json = { "deno_fmt" },
-		jsonc = { "deno_fmt" },
+		solidity = { "solidity_forge" },
+	},
+	formatters = {
+		solidity_forge = {
+			stdin = false,
+			command = "forge",
+			args = { "fmt" },
+			cwd = require("conform.util").root_file({ "foundry.toml" }),
+			require_cwd = true,
+		},
 	},
 })
