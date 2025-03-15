@@ -362,7 +362,7 @@ COPY --from=install_configuration \
   ${USER_HOME_DIR}/.config/ .config/
 # Ensuring correct ownership for those directories especially for rootless
 # configurations
-RUN mkdir .ssh .local
+RUN mkdir -p .ssh .local
 ENV NODEJS_INSTALL_DIR=${USER_HOME_DIR}/.nodejs
 ENV NPM_PREFIX_DIR=${USER_HOME_DIR}/.npm-prefix
 ENV NEOVIM_INSTALL_DIR=${USER_HOME_DIR}/.neovim
