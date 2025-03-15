@@ -15,6 +15,8 @@ print_init_header() {
   between square brackets.
   Should you have made a mistake, you can execute \`make init\`
   again to fix the faulty setting value you need.
+  You can also interrupt this initialization process anytime by pressing ctrl-c
+  if you have finished your variable value modifications.
 EOF
 
 }
@@ -84,10 +86,10 @@ top_section() {
 
   local section_line_count=$((top_section_last_line_index - 1))
 
-  echo "${sections}" | "$(my_sed)" -r -n "1,$section_line_count p"
+  echo "${sections}" | "$(my_sed)" -E -n "1,$section_line_count p"
 }
 
-print_section_header() {
+print_top_section_header() {
   local section="$1"
 
   set_print_color_light_grey
@@ -100,7 +102,7 @@ print_section_header() {
   set_print_color_default
 }
 
-format_section_declarations() {
+format_top_section_declarations() {
   local headerless_section &&
     headerless_section="$(echo "${section}" | "$(my_sed)" -n '5,$ p')"
 
@@ -231,7 +233,7 @@ ask_question() {
   fi
 }
 
-pop_question() {
+remove_top_question() {
   local questions="$1"
   local it=1
 
@@ -247,12 +249,12 @@ pop_question() {
     "$(my_sed)" -n "$it,$ p"
 }
 
-ask_questions_of_section_in_file() {
+ask_questions_from_top_section_in_file() {
   local section="$1"
   local file="$2"
 
   local questions
-  questions="$(format_section_declarations "${section}")"
+  questions="$(format_top_section_declarations "${section}")"
 
   local last_exit_code=$?
 
@@ -260,11 +262,11 @@ ask_questions_of_section_in_file() {
     local question &&
       question="$(top_question "${questions}")" &&
       ask_question "${question}" "${file}" &&
-      questions="$(pop_question "${questions}")"
+      questions="$(remove_top_question "${questions}")"
   done
 }
 
-pop_section() {
+remove_top_section() {
   local sections="$1"
 
   local next_section_line_index &&
@@ -285,9 +287,9 @@ ask_questions_for_file() {
   while [ -n "${sections}" ] && [ ${last_exit_code} -eq 0 ]; do
     local section &&
       section="$(top_section "${sections}")" &&
-      print_section_header "${section}" &&
-      ask_questions_of_section_in_file "${section}" "${file}" &&
-      sections="$(pop_section "${sections}")"
+      print_top_section_header "${section}" &&
+      ask_questions_from_top_section_in_file "${section}" "${file}" &&
+      sections="$(remove_top_section "${sections}")"
   done
 }
 
@@ -295,7 +297,8 @@ report_init_done() {
   cat <<EOF
 
 The initialization of this nideovim project instance is now complete.
-You may build, launch and log in to you ide service by issuing: \`make shell\`.
+You may build, launch and log in to you ide service by issuing: 
+\`make build up shell\` in one command.
 EOF
 }
 
