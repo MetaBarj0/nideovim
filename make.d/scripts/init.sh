@@ -33,13 +33,13 @@ write_project_properties() {
 # PROJECT PROPERTIES
 ################################################################################
 
-# The docker compose project name you want to give to this project.
-# Change this variable value when you want to have concurrent compose project
-# running in parallel for whatever reasons.
+# The name you want to give to this project.
+# Change this variable value when you want to have concurrent projects running
+# in parallel for whatever reasons.
 # This variable value is used to name docker images, containers and volumes
 # associated with this project.
 # default: nideovim
-COMPOSE_PROJECT_NAME ?= ${COMPOSE_PROJECT_NAME}
+PROJECT_NAME ?= ${PROJECT_NAME}
 
 # Do you want to build and use this project in a pseudo-rootless mode?
 # Pseudo-rootless mode consists in running an image with a user that is not
@@ -144,21 +144,21 @@ write_env_file() {
     write_ai_integration
 }
 
-prompt_compose_project_name() {
+prompt_project_name() {
   cat <<EOF
-The docker compose project name you want to give to this project.
-Change this variable value when you want to have concurrent compose project
-running in parallel for whatever reasons.
+The name you want to give to this project.
+Change this variable value when you want to have concurrent projects running
+in parallel for whatever reasons.
 This variable value is used to name docker images, containers and volumes
 associated with this project.
 default: nideovim
 
 EOF
 
-  read -r -p "[${COMPOSE_PROJECT_NAME}]: " compose_project_name
+  read -r -p "[${PROJECT_NAME}]: " project_name
 
-  if [ -n "${compose_project_name}" ]; then
-    COMPOSE_PROJECT_NAME="${compose_project_name}"
+  if [ -n "${project_name}" ]; then
+    PROJECT_NAME="${project_name}"
   fi
 
   echo
@@ -224,7 +224,7 @@ EOF
 }
 
 prompt_project_properties() {
-  prompt_compose_project_name &&
+  prompt_project_name &&
     prompt_rootless_mode &&
     prompt_non_root_user_name &&
     prompt_non_root_user_directory
