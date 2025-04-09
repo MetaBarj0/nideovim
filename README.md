@@ -44,3 +44,8 @@ For MacOS, ensure to install `gsed` using Homebrew for instance.
 [nideovim_react](https://github.com/MetaBarj0/nideovim_react.git) gather all
 `nideovim` offers and extends it to facilitate react/next application
 development
+
+[nideovim_dapp](https://github.com/MetaBarj0/nideovim_dapp.git) gather all
+`nideovim` offers and extends it to facilitate decentralized application
+development for EVM ecosystems with Foundry, solidity. Also offers feature to
+create rich frontend with react/next.

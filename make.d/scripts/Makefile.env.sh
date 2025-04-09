@@ -1,1 +1,1 @@
-cp make.d/env.d/Makefile.env.sample Makefile.env
+bash -c '. ./make.d/scripts/init.sh --defaults'

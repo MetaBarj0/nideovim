@@ -1,326 +1,393 @@
 . "${NIDEOVIM_MAKEFILE_DIR:-.}/make.d/lib.d/color.sh"
 
-print_init_header() {
-  set_print_color_default
+load_default_values() {
+  . ./make.d/env.d/Makefile.env.defaults
+}
 
+write_toc() {
+  cat <<EOF >>Makefile.env
+################################################################################
+# Makefile.env
+#
+# This file contains several environment variable definitions.
+# Those variables are useful to build and run this debian-based, dockerized and
+# neovim-powered integrated development environment
+################################################################################
+
+################################################################################
+# SECTION INDEX
+#
+# PROJECT PROPERTIES
+# IDE TOOLING
+# AUTHENTICATION
+# AI INTEGRATION
+#
+################################################################################
+
+EOF
+}
+
+write_project_properties() {
+  cat <<EOF >>Makefile.env
+################################################################################
+# PROJECT PROPERTIES
+################################################################################
+
+# The docker compose project name you want to give to this project.
+# Change this variable value when you want to have concurrent compose project
+# running in parallel for whatever reasons.
+# This variable value is used to name docker images, containers and volumes
+# associated with this project.
+# default: nideovim
+COMPOSE_PROJECT_NAME ?= ${COMPOSE_PROJECT_NAME}
+
+# Do you want to build and use this project in a pseudo-rootless mode?
+# Pseudo-rootless mode consists in running an image with a user that is not
+# \`root\`. Pseudo-rootless means not fully-rootless as the underlying docker
+# daemon is still running with a very priviledged user (sometime root).
+# Set this variable to any value but 0 to activate the pseudo rootless mode.
+# Keep in mind that pseudo-rootless mode does not fit well at all if you use
+# DockerDesktop or Orbstack. I Did not find out a way to map user and group id
+# correctly in the pseudo-rootless resulting container.
+# Thus, if you use docker directly through DockerDesktop or Orbstack, set
+# ROOTLESS to 0.
+# Note that pseudo-rootless mode can be activated in Orbstack's virtual
+# machines if you have docker installed in this virtual machine.
+# default: 0
+ROOTLESS ?= ${ROOTLESS}
+
+# The user name to use when pseudo-rootless mode is used.
+# default: nideovim
+NON_ROOT_USER_NAME ?= ${NON_ROOT_USER_NAME}
+
+# The home directory of the user created when the pseudo-rootless mode is used.
+# default: /home/nideovim
+NON_ROOT_USER_HOME_DIR ?= ${NON_ROOT_USER_HOME_DIR}
+
+EOF
+}
+
+write_ide_tooling() {
+  cat <<EOF >>Makefile.env
+################################################################################
+# IDE TOOLING
+################################################################################
+
+# The version of the LLVM to install in the ide service docker image.
+# If you specify an incorrect value, the build may fail.
+# Note that the current stable version of the LLVM project may be higher that
+# the default proposed version number.
+# default: 20
+LLVM_VERSION ?= ${LLVM_VERSION}
+
+# In the ide service, the Node.js version to install. Feel free to update it
+# when new releases are available.
+# Specifying the special 'latest' value will provide you with the latest
+# available release. Otherwise you have to set a valid semver compliant
+# version, for instance 22.4.0. incorrect or not found version will install the
+# latest one.
+# default: latest
+NODEJS_VERSION ?= ${NODEJS_VERSION}
+
+# Name of the directory within the user home directory of the ide service
+# container. This is the target of the volume in which you can store everything
+# you need.
+# default: workspace
+VOLUME_DIR_NAME ?= ${VOLUME_DIR_NAME}
+
+EOF
+}
+
+write_authentication() {
+  cat <<EOF >>Makefile.env
+################################################################################
+# AUTHENTICATION
+################################################################################
+
+# File path of the public key for ssh authentication. Keep in mind that it MUST
+# target a file on the docker host machine. It is especially important when
+# your want to run nideovim within another nideovim.
+# default: ~/.ssh/id_rsa.pub
+SSH_PUBLIC_KEY_FILE ?= ${SSH_PUBLIC_KEY_FILE}
+
+# File path of the secret key for ssh authentication. Keep in mind that it MUST
+# target a file on the docker host machine. It is especially important when
+# your want to run nideovim within another nideovim.
+# default: ~/.ssh/id_rsa
+SSH_SECRET_KEY_FILE ?= ${SSH_SECRET_KEY_FILE}
+
+EOF
+}
+
+write_ai_integration() {
+  cat <<EOF >>Makefile.env
+################################################################################
+# AI INTEGRATION
+################################################################################
+
+# Your anthropic API key to integrate your neovim workflow with Claude thanks
+# to the Claude plugin (https://github.com/pasky/claude.vim)
+# You will need to explicitely setup an API key here.
+# Keep in mind it is a sensitive information (you may deal with real money).
+# default: not_set
+ANTHROPIC_API_KEY ?= ${ANTHROPIC_API_KEY}
+
+EOF
+}
+
+write_env_file() {
+  true >Makefile.env &&
+    write_toc &&
+    write_project_properties &&
+    write_ide_tooling &&
+    write_authentication &&
+    write_ai_integration
+}
+
+prompt_compose_project_name() {
   cat <<EOF
-========================nideovim initialization facility========================
+The docker compose project name you want to give to this project.
+Change this variable value when you want to have concurrent compose project
+running in parallel for whatever reasons.
+This variable value is used to name docker images, containers and volumes
+associated with this project.
+default: nideovim
 
-  Welcome in the initializer facility.
-
-  You'll be asked several questions for you to answer in order to initialize
-  all general settings of your nideovim project instance.
-
-  Each question is explained and has an overridable default value specified
-  between square brackets.
-  Should you have made a mistake, you can execute \`make init\`
-  again to fix the faulty setting value you need.
-  You can also interrupt this initialization process anytime by pressing ctrl-c
-  if you have finished your variable value modifications.
 EOF
 
-}
+  read -r -p "[${COMPOSE_PROJECT_NAME}]: " compose_project_name
 
-my_sed() {
-  local sed_cmd='gsed'
-
-  if ! command -v "${sed_cmd}" >/dev/null; then
-    sed_cmd='sed'
+  if [ -n "${compose_project_name}" ]; then
+    COMPOSE_PROJECT_NAME="${compose_project_name}"
   fi
 
-  echo "${sed_cmd}"
+  echo
 }
 
-get_first_empty_line_in_file_from() {
-  local file="$1"
-  local begin=$2
-  local it=$begin
-
-  while ! "$(my_sed)" -n -r "$it p" "${file}" | grep -E '^$' >/dev/null; do
-    it=$((it + 1))
-  done
-
-  echo "${it}"
-}
-
-get_first_section_line_in() {
-  local file="$1"
-
-  local it=0 &&
-    it=$(get_first_empty_line_in_file_from "${file}" 1) &&
-    it=$(get_first_empty_line_in_file_from "${file}" $((it + 1)))
-
-  echo $((it + 1))
-}
-
-extract_sections_in() {
-  local file="$1"
-
-  local it &&
-    it=$(get_first_section_line_in "${file}")
-
-  "$(my_sed)" -n -r "$it,$ p" "${file}"
-}
-
-get_top_section_last_line_index() {
-  local sections="$1"
-  local it=5 # ignore the 4 first line of section header
-  local last_line_not_found=0
-
-  while [ $last_line_not_found -eq 0 ]; do
-    echo "${sections}" | "$(my_sed)" -n "$it p" | grep -E -v '^##+#$' >/dev/null
-
-    last_line_not_found=$?
-
-    it=$((it + 1))
-  done
-
-  echo $((it - 1))
-}
-
-top_section() {
-  local sections="$1"
-
-  local top_section_last_line_index &&
-    top_section_last_line_index=$(get_top_section_last_line_index "${sections}")
-
-  local section_line_count=$((top_section_last_line_index - 1))
-
-  echo "${sections}" | "$(my_sed)" -E -n "1,$section_line_count p"
-}
-
-print_top_section_header() {
-  local section="$1"
-
-  set_print_color_light_grey
-
-  echo "${section}" |
-    "$(my_sed)" -n '2 p' |
-    "$(my_sed)" -E 's/^# //' |
-    "$(my_sed)" -E 's/$/ CONFIGURATION/'
-
-  set_print_color_default
-}
-
-format_top_section_declarations() {
-  local headerless_section &&
-    headerless_section="$(echo "${section}" | "$(my_sed)" -n '5,$ p')"
-
-  echo "${headerless_section}" |
-    "$(my_sed)" -E 's/(^[A-Za-z_][A-Za-z0-9_]*)\s*\?=\s*(.*$)/\1?=\2/'
-}
-
-get_top_question_last_line_index() {
-  local questions="$1"
-  local it=1
-  local last_line_not_found=0
-
-  while [ $last_line_not_found -eq 0 ]; do
-    echo "${questions}" | "$(my_sed)" -n "$it p" | grep -E -v '^$' >/dev/null
-
-    last_line_not_found=$?
-
-    it=$((it + 1))
-  done
-
-  echo $((it - 1))
-}
-
-top_question() {
-  local questions="$1"
-
-  local top_question_last_line_index
-  top_question_last_line_index=$(get_top_question_last_line_index "${questions}")
-
-  local question_line_count=$((top_question_last_line_index - 1))
-
-  echo "${questions}" | "$(my_sed)" -n "1,$question_line_count p"
-}
-
-get_variable_line_index() {
-  local body="$1"
-  local it=1
-  local last_line_not_found=0
-
-  while [ $last_line_not_found -eq 0 ]; do
-    echo "${body}" | "$(my_sed)" -n "$it p" | grep -E '^#' >/dev/null
-
-    last_line_not_found=$?
-
-    it=$((it + 1))
-  done
-
-  echo $((it - 1))
-}
-
-get_question_description() {
-  local body="$1"
-
-  local variable_line_index &&
-    variable_line_index=$(get_variable_line_index "${body}")
-
-  local description_line_count &&
-    description_line_count=$((variable_line_index - 1))
-
-  echo "${body}" |
-    "$(my_sed)" -n "1,$description_line_count p" |
-    "$(my_sed)" -E 's/^# /  /'
-}
-
-get_question_variable_definition() {
-  local body="$1"
-
-  local variable_line_index &&
-    variable_line_index=$(get_variable_line_index "${body}")
-
-  echo "${body}" |
-    "$(my_sed)" -n "$variable_line_index p"
-}
-
-get_question_variable_name() {
-  local body="$1"
-
-  get_question_variable_definition "${body}" |
-    "$(my_sed)" -E 's/(^[A-Z_][A-Za-z0-9_]*)\?=.*/\1/'
-}
-
-get_question_variable_value() {
-  local body="$1"
-
-  get_question_variable_definition "${body}" |
-    "$(my_sed)" -E 's/^[A-Z_][A-Za-z0-9_]*\?=(.*)/\1/'
-}
-
-update_variable_in_file() {
-  local file="$1"
-  local variable_name="$2"
-  local variable_value="$3"
-
-  "$(my_sed)" -E -i \
-    "s%^${variable_name}\s*\?=\s*.*\$%${variable_name} ?= ${variable_value}%" \
-    "${file}"
-}
-
-ask_question() {
-  local body="$1"
-  local file="$2"
-
-  local description &&
-    description="$(get_question_description "${body}")"
-
-  local variable_name &&
-    variable_name="$(get_question_variable_name "${body}")"
-
-  local variable_value &&
-    variable_value="$(get_question_variable_value "${body}")"
-
-  set_print_color_light_grey
-  echo "  ${variable_name}:"
-
-  set_print_color_default
-  echo "${description}"
-
-  set_print_color_light_grey
-  read -p \
-    "  [${variable_value}]: " \
-    "${variable_name?}"
-
-  set_print_color_default
-  eval 'local value=$'"${variable_name}"
-
-  if [ -n "$value" ]; then
-    update_variable_in_file "${file}" "${variable_name}" "${value}"
-  fi
-}
-
-remove_top_question() {
-  local questions="$1"
-  local it=1
-
-  while ! echo "${questions}" |
-    "$(my_sed)" -n -r "$it p" |
-    grep -E '^[^=]+=.*$' >/dev/null; do
-    it=$((it + 1))
-  done
-
-  it=$((it + 2)) # An empty line to pass and onother to reach the next question
-
-  echo "${questions}" |
-    "$(my_sed)" -n "$it,$ p"
-}
-
-ask_questions_from_top_section_in_file() {
-  local section="$1"
-  local file="$2"
-
-  local questions
-  questions="$(format_top_section_declarations "${section}")"
-
-  local last_exit_code=$?
-
-  while [ -n "${questions}" ] && [ ${last_exit_code} -eq 0 ]; do
-    local question &&
-      question="$(top_question "${questions}")" &&
-      ask_question "${question}" "${file}" &&
-      questions="$(remove_top_question "${questions}")"
-  done
-}
-
-remove_top_section() {
-  local sections="$1"
-
-  local next_section_line_index &&
-    next_section_line_index=$(get_top_section_last_line_index "${sections}")
-
-  echo "${sections}" |
-    "$(my_sed)" -n "$next_section_line_index,$ p"
-}
-
-ask_questions_for_file() {
-  local file="$1"
-
-  local sections
-  sections="$(extract_sections_in "$file")"
-
-  local last_exit_code=$?
-
-  while [ -n "${sections}" ] && [ ${last_exit_code} -eq 0 ]; do
-    local section &&
-      section="$(top_section "${sections}")" &&
-      print_top_section_header "${section}" &&
-      ask_questions_from_top_section_in_file "${section}" "${file}" &&
-      sections="$(remove_top_section "${sections}")"
-  done
-}
-
-report_init_done() {
+prompt_rootless_mode() {
   cat <<EOF
+Do you want to build and use this project in a pseudo-rootless mode?
+Pseudo-rootless mode consists in running an image with a user that is not
+\`root\`. Pseudo-rootless means not fully-rootless as the underlying docker
+daemon is still running with a very priviledged user (sometime root).
+Set this variable to any value but 0 to activate the pseudo rootless mode.
+Keep in mind that pseudo-rootless mode does not fit well at all if you use
+DockerDesktop or Orbstack. I Did not find out a way to map user and group id
+correctly in the pseudo-rootless resulting container.
+Thus, if you use docker directly through DockerDesktop or Orbstack, set
+ROOTLESS to 0.
+Note that pseudo-rootless mode can be activated in Orbstack's virtual
+machines if you have docker installed in this virtual machine.
+default: 0
 
-The initialization of this nideovim project instance is now complete.
-You may build, launch and log in to you ide service by issuing: 
-\`make build up shell\` in one command.
 EOF
+
+  read -r -p "[${ROOTLESS}]: " rootless
+
+  if [ -n "${rootless}" ]; then
+    ROOTLESS="${rootless}"
+  fi
+
+  echo
+}
+
+prompt_non_root_user_name() {
+  cat <<EOF
+The user name to use when pseudo-rootless mode is used.
+default: nideovim
+
+EOF
+
+  read -r -p "[${NON_ROOT_USER_NAME}]: " non_root_user_name
+
+  if [ -n "${non_root_user_name}" ]; then
+    NON_ROOT_USER_NAME="${non_root_user_name}"
+  fi
+
+  echo
+}
+
+prompt_non_root_user_directory() {
+  cat <<EOF
+The home directory of the user created when the pseudo-rootless mode is used.
+default: /home/nideovim
+
+EOF
+
+  read -r -p "[${NON_ROOT_USER_HOME_DIR}]: " non_root_user_home_dir
+
+  if [ -n "${non_root_user_home_dir}" ]; then
+    NON_ROOT_USER_HOME_DIR="${non_root_user_home_dir}"
+  fi
+
+  echo
+}
+
+prompt_project_properties() {
+  prompt_compose_project_name &&
+    prompt_rootless_mode &&
+    prompt_non_root_user_name &&
+    prompt_non_root_user_directory
+}
+
+prompt_llvm_version() {
+  cat <<EOF
+The version of the LLVM to install in the ide service docker image.
+If you specify an incorrect value, the build may fail.
+Note that the current stable version of the LLVM project may be higher that
+the default proposed version number.
+default: 20
+
+EOF
+
+  read -r -p "[${LLVM_VERSION}]: " llvm_version
+
+  if [ -n "${llvm_version}" ]; then
+    LLVM_VERSION="${llvm_version}"
+  fi
+
+  echo
+}
+
+prompt_nodejs_version() {
+  cat <<EOF
+In the ide service, the Node.js version to install. Feel free to update it
+when new releases are available.
+Specifying the special 'latest' value will provide you with the latest
+available release. Otherwise you have to set a valid semver compliant
+version, for instance 22.4.0. incorrect or not found version will install the
+latest one.
+default: latest
+
+EOF
+
+  read -r -p "[${NODEJS_VERSION}]: " nodejs_version
+
+  if [ -n "${nodejs_version}" ]; then
+    NODEJS_VERSION="${nodejs_version}"
+  fi
+
+  echo
+}
+
+prompt_volume_dir_name() {
+  cat <<EOF
+Name of the directory within the user home directory of the ide service
+container. This is the target of the volume in which you can store everything
+you need.
+default: workspace
+
+EOF
+
+  read -r -p "[${VOLUME_DIR_NAME}]: " volume_dir_name
+
+  if [ -n "${volume_dir_name}" ]; then
+    VOLUME_DIR_NAME="${volume_dir_name}"
+  fi
+
+  echo
+}
+
+prompt_ide_tooling() {
+  prompt_llvm_version &&
+    prompt_nodejs_version &&
+    prompt_volume_dir_name
+}
+
+prompt_ssh_public_key() {
+  cat <<EOF
+File path of the public key for ssh authentication. Keep in mind that it MUST
+target a file on the docker host machine. It is especially important when
+your want to run nideovim within another nideovim.
+default: ~/.ssh/id_rsa.pub
+
+EOF
+
+  read -r -p "[${SSH_PUBLIC_KEY_FILE}]: " ssh_public_key_file
+
+  if [ -n "${ssh_public_key_file}" ]; then
+    SSH_PUBLIC_KEY_FILE="${ssh_public_key_file}"
+  fi
+
+  echo
+}
+
+prompt_ssh_secret_key() {
+  cat <<EOF
+File path of the secret key for ssh authentication. Keep in mind that it MUST
+target a file on the docker host machine. It is especially important when
+your want to run nideovim within another nideovim.
+default: ~/.ssh/id_rsa
+
+EOF
+
+  read -r -p "[${SSH_SECRET_KEY_FILE}]: " ssh_secret_key_file
+
+  if [ -n "${ssh_secret_key_file}" ]; then
+    SSH_SECRET_KEY_FILE="${ssh_secret_key_file}"
+  fi
+  echo
+}
+
+prompt_authentication() {
+  prompt_ssh_public_key &&
+    prompt_ssh_secret_key
+}
+
+prompt_anthropic_api_key() {
+  cat <<EOF
+Your anthropic API key to integrate your neovim workflow with Claude thanks
+to the Claude plugin (https://github.com/pasky/claude.vim)
+You will need to explicitely setup an API key here.
+Keep in mind it is a sensitive information (you may deal with real money).
+default: not_set
+
+EOF
+
+  read -r -p "[${ANTHROPIC_API_KEY}]: " anthropic_api_key
+
+  if [ -n "${anthropic_api_key}" ]; then
+    ANTHROPIC_API_KEY="${anthropic_api_key}"
+  fi
+  echo
+}
+
+prompt_ai_integration() {
+  prompt_anthropic_api_key
+}
+
+init_interactive() {
+  prompt_project_properties &&
+    prompt_ide_tooling &&
+    prompt_authentication &&
+    prompt_ai_integration &&
+    write_env_file
 }
 
 init() {
-  print_init_header &&
-    ask_questions_for_file "Makefile.env" &&
-    report_init_done
+  load_default_values "$1"
+
+  if [ "$1" = '--defaults' ]; then
+    write_env_file
+  else
+    init_interactive
+  fi
 }
 
-set_print_color_default_and_exit() {
-  set_print_color_default
+handle_int_signal() {
+  set_print_color_default &&
+    write_env_file &&
+    exit $?
 
-  exit
 }
 
 setup_signal_handling() {
-  trap set_print_color_default_and_exit INT
+  trap handle_int_signal INT
 }
 
 main() {
   setup_signal_handling &&
-    init
+    init "$1"
 }
 
-main
+main "$@"
