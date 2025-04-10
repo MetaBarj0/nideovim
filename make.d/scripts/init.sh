@@ -27,43 +27,106 @@ write_toc() {
 EOF
 }
 
+comment() {
+  while read -r line; do
+    echo "${line}" | sed -E 's/^/# /'
+  done
+}
+
+write_project_name_description() {
+  cat <<EOF
+The name you want to give to this project.
+Change this variable value when you want to have concurrent projects running
+in parallel for whatever reasons.
+This variable value is used to name docker images, containers and volumes
+associated with this project.
+default: nideovim
+EOF
+}
+
+write_rootless_description() {
+  cat <<EOF
+Do you want to build and use this project in a pseudo-rootless mode?
+Pseudo-rootless mode consists in running an image with a user that is not
+\`root\`. Pseudo-rootless means not fully-rootless as the underlying docker
+daemon is still running with a very priviledged user (sometime root).
+Set this variable to any value but 0 to activate the pseudo rootless mode.
+Keep in mind that pseudo-rootless mode does not fit well at all if you use
+DockerDesktop or Orbstack. I Did not find out a way to map user and group id
+correctly in the pseudo-rootless resulting container.
+Thus, if you use docker directly through DockerDesktop or Orbstack, set
+ROOTLESS to 0.
+Note that pseudo-rootless mode can be activated in Orbstack's virtual
+machines if you have docker installed in this virtual machine.
+It also fits particularly well when used in a WSL2 distribution provided docker
+is installed.
+default: 1
+EOF
+}
+
+write_user_name_description() {
+  cat <<EOF
+The user name to use when pseudo-rootless mode is used.
+default: nideovim
+EOF
+}
+
+write_user_home_dir_description() {
+  cat <<EOF
+The home directory of the user created when the pseudo-rootless mode is used.
+default: /home/nideovim
+EOF
+}
+
 write_project_properties() {
   cat <<EOF >>Makefile.env
 ################################################################################
 # PROJECT PROPERTIES
 ################################################################################
 
-# The name you want to give to this project.
-# Change this variable value when you want to have concurrent projects running
-# in parallel for whatever reasons.
-# This variable value is used to name docker images, containers and volumes
-# associated with this project.
-# default: nideovim
+$(write_project_name_description | comment)
 PROJECT_NAME ?= ${PROJECT_NAME}
 
-# Do you want to build and use this project in a pseudo-rootless mode?
-# Pseudo-rootless mode consists in running an image with a user that is not
-# \`root\`. Pseudo-rootless means not fully-rootless as the underlying docker
-# daemon is still running with a very priviledged user (sometime root).
-# Set this variable to any value but 0 to activate the pseudo rootless mode.
-# Keep in mind that pseudo-rootless mode does not fit well at all if you use
-# DockerDesktop or Orbstack. I Did not find out a way to map user and group id
-# correctly in the pseudo-rootless resulting container.
-# Thus, if you use docker directly through DockerDesktop or Orbstack, set
-# ROOTLESS to 0.
-# Note that pseudo-rootless mode can be activated in Orbstack's virtual
-# machines if you have docker installed in this virtual machine.
-# default: 0
+$(write_rootless_description | comment)
 ROOTLESS ?= ${ROOTLESS}
 
-# The user name to use when pseudo-rootless mode is used.
-# default: nideovim
+$(write_user_name_description | comment)
 NON_ROOT_USER_NAME ?= ${NON_ROOT_USER_NAME}
 
-# The home directory of the user created when the pseudo-rootless mode is used.
-# default: /home/nideovim
+$(write_user_home_dir_description | comment)
 NON_ROOT_USER_HOME_DIR ?= ${NON_ROOT_USER_HOME_DIR}
 
+EOF
+}
+
+write_llvm_version_description() {
+  cat <<EOF
+The version of the LLVM to install in the ide service docker image.
+If you specify an incorrect value, the build may fail.
+Note that the current stable version of the LLVM project may be higher that
+the default proposed version number.
+default: 20
+EOF
+}
+
+write_nodejs_version_description() {
+  cat <<EOF
+In the ide service, the Node.js version to install. Feel free to update it
+when new releases are available.
+Specifying the special 'latest' value will provide you with the latest
+available release. Otherwise you have to set a valid semver compliant
+version, for instance 22.4.0. incorrect or not found version will install the
+latest one.
+default: latest
+EOF
+}
+
+write_volume_dir_name_description() {
+  cat <<EOF
+Name of the directory within the user home directory of the ide service
+container. This is the target of the volume in which you can store everything
+you need.
+default: workspace
 EOF
 }
 
@@ -73,28 +136,33 @@ write_ide_tooling() {
 # IDE TOOLING
 ################################################################################
 
-# The version of the LLVM to install in the ide service docker image.
-# If you specify an incorrect value, the build may fail.
-# Note that the current stable version of the LLVM project may be higher that
-# the default proposed version number.
-# default: 20
+$(write_llvm_version_description | comment)
 LLVM_VERSION ?= ${LLVM_VERSION}
 
-# In the ide service, the Node.js version to install. Feel free to update it
-# when new releases are available.
-# Specifying the special 'latest' value will provide you with the latest
-# available release. Otherwise you have to set a valid semver compliant
-# version, for instance 22.4.0. incorrect or not found version will install the
-# latest one.
-# default: latest
+$(write_nodejs_version_description | comment)
 NODEJS_VERSION ?= ${NODEJS_VERSION}
 
-# Name of the directory within the user home directory of the ide service
-# container. This is the target of the volume in which you can store everything
-# you need.
-# default: workspace
+$(write_volume_dir_name_description | comment)
 VOLUME_DIR_NAME ?= ${VOLUME_DIR_NAME}
 
+EOF
+}
+
+write_ssh_public_key_file_description() {
+  cat <<EOF
+File path of the public key for ssh authentication. Keep in mind that it MUST
+target a file on the docker host machine. It is especially important when
+your want to run nideovim within another nideovim.
+default: ~/.ssh/id_rsa.pub
+EOF
+}
+
+write_ssh_secret_key_file_description() {
+  cat <<EOF
+File path of the secret key for ssh authentication. Keep in mind that it MUST
+target a file on the docker host machine. It is especially important when
+your want to run nideovim within another nideovim.
+default: ~/.ssh/id_rsa
 EOF
 }
 
@@ -104,18 +172,22 @@ write_authentication() {
 # AUTHENTICATION
 ################################################################################
 
-# File path of the public key for ssh authentication. Keep in mind that it MUST
-# target a file on the docker host machine. It is especially important when
-# your want to run nideovim within another nideovim.
-# default: ~/.ssh/id_rsa.pub
+$(write_ssh_public_key_file_description | comment)
 SSH_PUBLIC_KEY_FILE ?= ${SSH_PUBLIC_KEY_FILE}
 
-# File path of the secret key for ssh authentication. Keep in mind that it MUST
-# target a file on the docker host machine. It is especially important when
-# your want to run nideovim within another nideovim.
-# default: ~/.ssh/id_rsa
+$(write_ssh_secret_key_file_description | comment)
 SSH_SECRET_KEY_FILE ?= ${SSH_SECRET_KEY_FILE}
 
+EOF
+}
+
+write_anthropic_api_key_description() {
+  cat <<EOF
+Your anthropic API key to integrate your neovim workflow with Claude thanks
+to the Claude plugin (https://github.com/pasky/claude.vim)
+You will need to explicitely setup an API key here.
+Keep in mind it is a sensitive information (you may deal with real money).
+default: not_set
 EOF
 }
 
@@ -125,11 +197,7 @@ write_ai_integration() {
 # AI INTEGRATION
 ################################################################################
 
-# Your anthropic API key to integrate your neovim workflow with Claude thanks
-# to the Claude plugin (https://github.com/pasky/claude.vim)
-# You will need to explicitely setup an API key here.
-# Keep in mind it is a sensitive information (you may deal with real money).
-# default: not_set
+$(write_anthropic_api_key_description | comment)
 ANTHROPIC_API_KEY ?= ${ANTHROPIC_API_KEY}
 
 EOF
@@ -145,15 +213,8 @@ write_env_file() {
 }
 
 prompt_project_name() {
-  cat <<EOF
-The name you want to give to this project.
-Change this variable value when you want to have concurrent projects running
-in parallel for whatever reasons.
-This variable value is used to name docker images, containers and volumes
-associated with this project.
-default: nideovim
-
-EOF
+  write_project_name_description
+  echo
 
   read -r -p "[${PROJECT_NAME}]: " project_name
 
@@ -165,22 +226,8 @@ EOF
 }
 
 prompt_rootless_mode() {
-  cat <<EOF
-Do you want to build and use this project in a pseudo-rootless mode?
-Pseudo-rootless mode consists in running an image with a user that is not
-\`root\`. Pseudo-rootless means not fully-rootless as the underlying docker
-daemon is still running with a very priviledged user (sometime root).
-Set this variable to any value but 0 to activate the pseudo rootless mode.
-Keep in mind that pseudo-rootless mode does not fit well at all if you use
-DockerDesktop or Orbstack. I Did not find out a way to map user and group id
-correctly in the pseudo-rootless resulting container.
-Thus, if you use docker directly through DockerDesktop or Orbstack, set
-ROOTLESS to 0.
-Note that pseudo-rootless mode can be activated in Orbstack's virtual
-machines if you have docker installed in this virtual machine.
-default: 0
-
-EOF
+  write_rootless_description
+  echo
 
   read -r -p "[${ROOTLESS}]: " rootless
 
@@ -192,11 +239,8 @@ EOF
 }
 
 prompt_non_root_user_name() {
-  cat <<EOF
-The user name to use when pseudo-rootless mode is used.
-default: nideovim
-
-EOF
+  write_user_name_description
+  echo
 
   read -r -p "[${NON_ROOT_USER_NAME}]: " non_root_user_name
 
@@ -208,11 +252,8 @@ EOF
 }
 
 prompt_non_root_user_directory() {
-  cat <<EOF
-The home directory of the user created when the pseudo-rootless mode is used.
-default: /home/nideovim
-
-EOF
+  write_user_home_dir_description
+  echo
 
   read -r -p "[${NON_ROOT_USER_HOME_DIR}]: " non_root_user_home_dir
 
@@ -231,14 +272,8 @@ prompt_project_properties() {
 }
 
 prompt_llvm_version() {
-  cat <<EOF
-The version of the LLVM to install in the ide service docker image.
-If you specify an incorrect value, the build may fail.
-Note that the current stable version of the LLVM project may be higher that
-the default proposed version number.
-default: 20
-
-EOF
+  write_llvm_version_description
+  echo
 
   read -r -p "[${LLVM_VERSION}]: " llvm_version
 
@@ -250,16 +285,8 @@ EOF
 }
 
 prompt_nodejs_version() {
-  cat <<EOF
-In the ide service, the Node.js version to install. Feel free to update it
-when new releases are available.
-Specifying the special 'latest' value will provide you with the latest
-available release. Otherwise you have to set a valid semver compliant
-version, for instance 22.4.0. incorrect or not found version will install the
-latest one.
-default: latest
-
-EOF
+  write_nodejs_version_description
+  echo
 
   read -r -p "[${NODEJS_VERSION}]: " nodejs_version
 
@@ -271,13 +298,8 @@ EOF
 }
 
 prompt_volume_dir_name() {
-  cat <<EOF
-Name of the directory within the user home directory of the ide service
-container. This is the target of the volume in which you can store everything
-you need.
-default: workspace
-
-EOF
+  write_volume_dir_name_description
+  echo
 
   read -r -p "[${VOLUME_DIR_NAME}]: " volume_dir_name
 
@@ -295,13 +317,8 @@ prompt_ide_tooling() {
 }
 
 prompt_ssh_public_key() {
-  cat <<EOF
-File path of the public key for ssh authentication. Keep in mind that it MUST
-target a file on the docker host machine. It is especially important when
-your want to run nideovim within another nideovim.
-default: ~/.ssh/id_rsa.pub
-
-EOF
+  write_ssh_public_key_file_description
+  echo
 
   read -r -p "[${SSH_PUBLIC_KEY_FILE}]: " ssh_public_key_file
 
@@ -313,19 +330,15 @@ EOF
 }
 
 prompt_ssh_secret_key() {
-  cat <<EOF
-File path of the secret key for ssh authentication. Keep in mind that it MUST
-target a file on the docker host machine. It is especially important when
-your want to run nideovim within another nideovim.
-default: ~/.ssh/id_rsa
-
-EOF
+  write_ssh_secret_key_file_description
+  echo
 
   read -r -p "[${SSH_SECRET_KEY_FILE}]: " ssh_secret_key_file
 
   if [ -n "${ssh_secret_key_file}" ]; then
     SSH_SECRET_KEY_FILE="${ssh_secret_key_file}"
   fi
+
   echo
 }
 
@@ -335,20 +348,15 @@ prompt_authentication() {
 }
 
 prompt_anthropic_api_key() {
-  cat <<EOF
-Your anthropic API key to integrate your neovim workflow with Claude thanks
-to the Claude plugin (https://github.com/pasky/claude.vim)
-You will need to explicitely setup an API key here.
-Keep in mind it is a sensitive information (you may deal with real money).
-default: not_set
-
-EOF
+  write_anthropic_api_key_description
+  echo
 
   read -r -p "[${ANTHROPIC_API_KEY}]: " anthropic_api_key
 
   if [ -n "${anthropic_api_key}" ]; then
     ANTHROPIC_API_KEY="${anthropic_api_key}"
   fi
+
   echo
 }
 
