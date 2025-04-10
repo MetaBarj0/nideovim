@@ -1,27 +1,31 @@
 # nideovim
 
-This is an Integrated Development Environment (`IDE`) based on Linux Debian and
-the latest version of `neovim` (tip of the `master` branch)
+A development environment fabricator.
+Built around docker , debian , neovim  and LazyVim 💤 with awesome community
+plugins.
+
+It can create, manage and get you right into a fully integrated development
+environment with minimum hassle💢 for maximum productivity📈.
 
 ## prerequisites
 
 ### usage
 
-- terminal based
-- no graphical user interface
+- terminal based
+- no graphical user interface (no need of that)
 
 ### tooling
 
-- POSIX compliant shell
-- rev
-- cut
-- docker (either native or Docker Desktop or Orbstack)
+- POSIX compliant shell 󱆃
+- rev 
+- cut 
+- docker  (either native or Docker Desktop or Orbstack)
   - buildx plugin
   - compose plugin
-- make
-- command
-- GNU sed
-- (optional) less
+- make 
+- command 
+- GNU sed 
+- (optional) less 
 
 Generally speaking, a recent linux distribution or MacOS should do the job.
 For MacOS, ensure to install `gsed` using Homebrew for instance.
@@ -29,23 +33,9 @@ For MacOS, ensure to install `gsed` using Homebrew for instance.
 ### hardware
 
 - some giga-bytes of free storage to build and use the stuff
+- ideally, a good rig with some processing  power and RAM  (accelerate
+  builds)
 
 ## how to use?
 
-1. configure the project interactively with the `make init` command.
-2. build the `IDE` with the `make build` command.
-3. start the `IDE` with the `make up` command.
-4. use the `IDE` with the `make shell` command.
-5. shutdown with the `make down` command.
-6. getting some help with the `make help` command.
-
-## nideovim-based projects
-
-[nideovim_react](https://github.com/MetaBarj0/nideovim_react.git) gather all
-`nideovim` offers and extends it to facilitate react/next application
-development
-
-[nideovim_dapp](https://github.com/MetaBarj0/nideovim_dapp.git) gather all
-`nideovim` offers and extends it to facilitate decentralized application
-development for EVM ecosystems with Foundry, solidity. Also offers feature to
-create rich frontend with react/next.
+- a good start is to type `make help` 󰋖
