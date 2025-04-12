@@ -1,1 +1,3 @@
 Makefile.env
+instances/**
+!instances/.gitkeep
