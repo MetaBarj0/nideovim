@@ -40,6 +40,7 @@ Change this variable value when you want to have concurrent projects running
 in parallel for whatever reasons.
 This variable value is used to name docker images, containers and volumes
 associated with this project.
+The project name must be unique.
 default: nideovim
 EOF
 }
