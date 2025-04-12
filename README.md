@@ -32,7 +32,7 @@ For MacOS, ensure to install `gsed` using Homebrew for instance.
 
 ### hardware
 
-- some giga-bytes of free storage to build and use the stuff
+- some giga-bytes of free storage 󰋊 to build and use the stuff
 - ideally, a good rig with some processing  power and RAM  (accelerate
   builds)
 
