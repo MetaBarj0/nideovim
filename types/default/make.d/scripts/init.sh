@@ -61,7 +61,7 @@ Note that pseudo-rootless mode can be activated in Orbstack's virtual
 machines if you have docker installed in this virtual machine.
 It also fits particularly well when used in a WSL2 distribution provided docker
 is installed.
-default: 1
+default: 0
 EOF
 }
 
