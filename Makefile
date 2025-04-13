@@ -1,5 +1,7 @@
 .PHONY: all help help-help new new-help
 
+SHELL := /bin/bash
+
 all: help
 
 help:
@@ -12,3 +14,4 @@ new:
 	@. scripts/new.sh
 
 new-help:
+	@. scripts/help/new-help.sh
