@@ -49,15 +49,19 @@ copy_type_to_staging_directory() {
 }
 
 init_instance() {
-  cd instances/$INSTANCE_ID/"$CHOSEN_TYPE" || return $?
+  export DEFAULT_INSTANCE_ID=$INSTANCE_ID
+  export CHOSEN_TYPE
 
   make --no-print-directory init
 
-  cd - || return $?
+  unset DEFAULT_INSTANCE_ID
 }
 
 set_or_propose_default_instance() {
-  if [ ! -f "instances/metadata" ]; then
+  # shellcheck source=/dev/null
+  . instances/metadata
+
+  if [ -z "$DEFAULT_INSTANCE_ID" ]; then
     echo "DEFAULT_INSTANCE_ID=$(get_latest_instance_id)" >instances/metadata
     return
   fi

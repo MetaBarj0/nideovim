@@ -2,6 +2,8 @@
 
 SHELL := /bin/bash
 
+include make/targets.Makefile
+
 all: help
 
 help:
