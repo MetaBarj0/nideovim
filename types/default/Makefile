@@ -3,6 +3,8 @@ include make.d/Makefile.targets
 
 export
 
+SHELL := /bin/bash
+
 help:
 	@. make.d/scripts/help.sh
 

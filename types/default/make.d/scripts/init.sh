@@ -28,7 +28,7 @@ EOF
 }
 
 comment() {
-  while read -r line; do
+  while read -e -r line; do
     echo "${line}" | sed -E 's/^/# /'
   done
 }
@@ -217,7 +217,7 @@ prompt_project_name() {
   write_project_name_description
   echo
 
-  read -r -p "[${PROJECT_NAME}]: " project_name
+  read -e -r -p "[${PROJECT_NAME}]: " project_name
 
   if [ -n "${project_name}" ]; then
     PROJECT_NAME="${project_name}"
@@ -230,7 +230,7 @@ prompt_rootless_mode() {
   write_rootless_description
   echo
 
-  read -r -p "[${ROOTLESS}]: " rootless
+  read -e -r -p "[${ROOTLESS}]: " rootless
 
   if [ -n "${rootless}" ]; then
     ROOTLESS="${rootless}"
@@ -243,7 +243,7 @@ prompt_non_root_user_name() {
   write_user_name_description
   echo
 
-  read -r -p "[${NON_ROOT_USER_NAME}]: " non_root_user_name
+  read -e -r -p "[${NON_ROOT_USER_NAME}]: " non_root_user_name
 
   if [ -n "${non_root_user_name}" ]; then
     NON_ROOT_USER_NAME="${non_root_user_name}"
@@ -256,7 +256,7 @@ prompt_non_root_user_directory() {
   write_user_home_dir_description
   echo
 
-  read -r -p "[${NON_ROOT_USER_HOME_DIR}]: " non_root_user_home_dir
+  read -e -r -p "[${NON_ROOT_USER_HOME_DIR}]: " non_root_user_home_dir
 
   if [ -n "${non_root_user_home_dir}" ]; then
     NON_ROOT_USER_HOME_DIR="${non_root_user_home_dir}"
@@ -276,7 +276,7 @@ prompt_llvm_version() {
   write_llvm_version_description
   echo
 
-  read -r -p "[${LLVM_VERSION}]: " llvm_version
+  read -e -r -p "[${LLVM_VERSION}]: " llvm_version
 
   if [ -n "${llvm_version}" ]; then
     LLVM_VERSION="${llvm_version}"
@@ -289,7 +289,7 @@ prompt_nodejs_version() {
   write_nodejs_version_description
   echo
 
-  read -r -p "[${NODEJS_VERSION}]: " nodejs_version
+  read -e -r -p "[${NODEJS_VERSION}]: " nodejs_version
 
   if [ -n "${nodejs_version}" ]; then
     NODEJS_VERSION="${nodejs_version}"
@@ -302,7 +302,7 @@ prompt_volume_dir_name() {
   write_volume_dir_name_description
   echo
 
-  read -r -p "[${VOLUME_DIR_NAME}]: " volume_dir_name
+  read -e -r -p "[${VOLUME_DIR_NAME}]: " volume_dir_name
 
   if [ -n "${volume_dir_name}" ]; then
     VOLUME_DIR_NAME="${volume_dir_name}"
@@ -321,7 +321,7 @@ prompt_ssh_public_key() {
   write_ssh_public_key_file_description
   echo
 
-  read -r -p "[${SSH_PUBLIC_KEY_FILE}]: " ssh_public_key_file
+  read -e -r -p "[${SSH_PUBLIC_KEY_FILE}]: " ssh_public_key_file
 
   if [ -n "${ssh_public_key_file}" ]; then
     SSH_PUBLIC_KEY_FILE="${ssh_public_key_file}"
@@ -334,7 +334,7 @@ prompt_ssh_secret_key() {
   write_ssh_secret_key_file_description
   echo
 
-  read -r -p "[${SSH_SECRET_KEY_FILE}]: " ssh_secret_key_file
+  read -e -r -p "[${SSH_SECRET_KEY_FILE}]: " ssh_secret_key_file
 
   if [ -n "${ssh_secret_key_file}" ]; then
     SSH_SECRET_KEY_FILE="${ssh_secret_key_file}"
@@ -352,7 +352,7 @@ prompt_anthropic_api_key() {
   write_anthropic_api_key_description
   echo
 
-  read -r -p "[${ANTHROPIC_API_KEY}]: " anthropic_api_key
+  read -e -r -p "[${ANTHROPIC_API_KEY}]: " anthropic_api_key
 
   if [ -n "${anthropic_api_key}" ]; then
     ANTHROPIC_API_KEY="${anthropic_api_key}"
