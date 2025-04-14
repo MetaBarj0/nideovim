@@ -7,8 +7,8 @@ clean: down
 build: target_stage=end
 build: build_type=unoptimized
 
-config:
-	@. make.d/scripts/config.sh
+inspect:
+	@. make.d/scripts/inspect.sh
 
 ps:
 	@. make.d/scripts/ps.sh
