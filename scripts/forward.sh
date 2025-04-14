@@ -1,3 +1,5 @@
+set -o pipefail
+
 . scripts/lib/instance.sh
 
 forward_from_new() {
@@ -29,7 +31,7 @@ ask_instance_to_interact_with() {
   while ! is_instance_id_valid "$instance_id"; do
     echo
     read -e -r \
-      -p "Which instance id do you want $target? " \
+      -p "Which instance id do you want to $target? " \
       -i "$DEFAULT_INSTANCE_ID" \
       instance_id
   done
