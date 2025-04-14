@@ -111,7 +111,7 @@ present_instances() {
     [ -z "$DEFAULT_INSTANCE_ID" ] || [ "$1" -ne "$DEFAULT_INSTANCE_ID" ]
   }
 
-  report_no_instance() {
+  report_no_instance_then_exit() {
     echo 'No instance found. Run make new to create one.' >&2
 
     exit 1
@@ -119,7 +119,7 @@ present_instances() {
 
   local all_instances_info &&
     all_instances_info=$(get_instance_directories |
-      any_else report_no_instance |
+      any_else report_no_instance_then_exit |
       filter is_not_instance_id |
       push_front "$DEFAULT_INSTANCE_ID" |
       transform print_instance_info) || exit $?
