@@ -51,10 +51,12 @@ copy_type_to_staging_directory() {
 init_instance() {
   export DEFAULT_INSTANCE_ID=$INSTANCE_ID
   export CHOSEN_TYPE
+  export FORWARD_FROM_NEW=
 
   make --no-print-directory init
 
   unset DEFAULT_INSTANCE_ID
+  unset FORWARD_FROM_NEW
 }
 
 set_or_propose_default_instance() {

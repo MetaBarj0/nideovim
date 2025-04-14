@@ -1,4 +1,17 @@
 . scripts/lib/funcshional.sh
+. scripts/lib/type.sh
+
+is_instance_id_valid() {
+  local id=$1
+
+  [ -n "$id" ] && [ -d "instances/$id" ]
+}
+
+report_no_instance_then_exit() {
+  echo 'No instance found. Run make new to create one.' >&2
+
+  exit 1
+}
 
 get_instance_directories() {
   find instances/ \
@@ -18,6 +31,50 @@ get_instance_type() {
     )
 
   echo "$type_in_instance"
+}
+
+is_not_instance_id() {
+  [ -z "$DEFAULT_INSTANCE_ID" ] || [ "$1" -ne "$DEFAULT_INSTANCE_ID" ]
+}
+
+print_instance_info() {
+  local instance_id=$1
+
+  local instance_type &&
+    instance_type=$(get_instance_type "$instance_id")
+
+  local project_name &&
+    project_name=$(get_instance_name "$instance_id" "$instance_type")
+
+  local prefix='| '
+  if [ -n "$DEFAULT_INSTANCE_ID" ] &&
+    [ "$instance_id" -eq "$DEFAULT_INSTANCE_ID" ]; then
+    prefix='->'
+  fi
+
+  local longest_type_name &&
+    longest_type_name="$(get_longest_type_name)"
+
+  printf "%-2s id: %s type: %-${longest_type_name}s name: %s\n" \
+    "$prefix" "$instance_id" "$instance_type" "$project_name"
+}
+
+get_instance_name() {
+  local instance_id="$1"
+  local instance_type="$2"
+
+  mkdir -p instances/staging
+
+  cat <<EOF >instances/staging/Makefile
+include instances/$instance_id/$instance_type/Makefile.env
+
+all:
+	@echo \$(PROJECT_NAME)
+EOF
+
+  make --no-print-directory -f instances/staging/Makefile
+
+  rm instances/staging/Makefile
 }
 
 present_instances() {

@@ -4,4 +4,4 @@ instances/metadata:
 new: instances/metadata
 
 %:
-	@. scripts/%.sh $@
+	@. scripts/forward.sh $@
