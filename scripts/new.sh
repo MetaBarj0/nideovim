@@ -15,9 +15,10 @@ ask_type() {
 
     present_types
 
-    printf '\nType? '
-
-    read -e -r CHOSEN_TYPE
+    echo
+    read -e -r \
+      -p 'Type? ' \
+      CHOSEN_TYPE
   done
 }
 
