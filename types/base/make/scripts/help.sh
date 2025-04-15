@@ -89,7 +89,7 @@ EOF
     build the ide service docker image. It can be useful to debug or test the
     image build process without having to complete the build until the very
     last build stage. See in the file
-    \`docker.d/ide/ide.unoptimized.Dockerfile\` for all build stages.
+    \`docker/ide/ide.unoptimized.Dockerfile\` for all build stages.
     Note that specifying a build stage other than \`end\` in this variable
     prevents the built image to be optimized even if you set the \`build_type\`
     variable value to \`optimized\`.

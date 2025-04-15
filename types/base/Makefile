@@ -1,24 +1,24 @@
-include make.d/Makefile.variables
-include make.d/Makefile.targets
+include make/variables.Makefile
+include make/targets.Makefile
 
 export
 
 SHELL := /bin/bash
 
 help:
-	@. make.d/scripts/help.sh
+	@. make/scripts/help.sh
 
 init:
-	@. make.d/scripts/init.sh
+	@. make/scripts/init.sh
 
 build:
-	@. make.d/scripts/build.sh
+	@. make/scripts/build.sh
 
 up:
-	@. make.d/scripts/up.sh
+	@. make/scripts/up.sh
 
 shell:
-	@. make.d/scripts/shell.sh
+	@. make/scripts/shell.sh
 
 down:
-	@. make.d/scripts/down.sh
+	@. make/scripts/down.sh

@@ -19,7 +19,7 @@ export_variables() {
 
 main() {
   export_variables &&
-    docker compose -f docker.d/compose.yaml config
+    docker compose -f docker/compose.yaml config
 }
 
 main

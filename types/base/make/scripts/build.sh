@@ -44,8 +44,8 @@ build_unoptimized_image() {
     --build-arg VOLUME_DIR_NAME="${VOLUME_DIR_NAME}" \
     --target="${target_stage?}" \
     -t "${COMPOSE_PROJECT_NAME}"_ide_image \
-    -f docker.d/ide/ide.unoptimized.Dockerfile \
-    docker.d/ide
+    -f docker/ide/ide.unoptimized.Dockerfile \
+    docker/ide
 }
 
 try_to_optimize_image() {
@@ -65,8 +65,8 @@ try_to_optimize_image() {
     --build-arg VOLUME_DIR_NAME="${VOLUME_DIR_NAME}" \
     --target="${target_stage?}" \
     -t "${COMPOSE_PROJECT_NAME}"_ide_image \
-    -f docker.d/ide/ide.optimized.Dockerfile \
-    docker.d/ide
+    -f docker/ide/ide.optimized.Dockerfile \
+    docker/ide
 }
 
 main() {
