@@ -375,7 +375,7 @@ init_interactive() {
 }
 
 init() {
-  load_default_values "$1"
+  load_default_values
 
   if [ "$1" = '--defaults' ]; then
     write_env_file
