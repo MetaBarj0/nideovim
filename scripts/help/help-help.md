@@ -100,7 +100,13 @@ boost the developer productivity, especially if the team uses `nideovim`.
    `instance` creation
 4. You figure out you can invoke `make new` to create an instance and you
    follow the guide.
-5. ==TODO==
+5. If you are not satisfied by the way you initialized your `instance` you can
+   invoke `make init` and change any variable related to the `instance` of your
+   choice
+6. You can access the help system of your new instance by typing `make
+   instance-help`. It may contain valuable information on how this `instance`
+   work and what kind of project it can support.
+7. ==TODO==
 
 ### For `type` maintainers
 

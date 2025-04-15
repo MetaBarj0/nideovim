@@ -1,4 +1,5 @@
-.PHONY: all help help-help new new-help set-default set-default-help
+.PHONY: all help help-help new new-help set-default set-default-help \
+	instance-help instance-help-help
 
 SHELL := /bin/bash
 
@@ -23,3 +24,9 @@ set-default:
 
 set-default-help:
 	@. scripts/help/set-default-help.sh
+
+instance-help:
+	@. scripts/instance-help.sh
+
+instance-help-help:
+	@. scripts/help/instance-help-help.sh
