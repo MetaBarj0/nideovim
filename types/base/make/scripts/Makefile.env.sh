@@ -1,1 +1,1 @@
-bash -c '. ./make.d/scripts/init.sh --defaults'
+bash -c '. ./make/scripts/init.sh --defaults'

@@ -10,9 +10,6 @@ build: build_type=unoptimized
 inspect:
 	@. make/scripts/inspect.sh
 
-ps:
-	@. make/scripts/ps.sh
-
 nuke: down_removes_volumes=yes
 nuke:
 	@. make/scripts/down.sh

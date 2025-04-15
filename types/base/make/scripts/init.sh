@@ -1,7 +1,8 @@
-. "${NIDEOVIM_MAKEFILE_DIR:-.}/make.d/lib.d/color.sh"
+# shellcheck source=/dev/null
+. "${NIDEOVIM_MAKEFILE_DIR:-.}/make/lib/color.sh"
 
 load_default_values() {
-  . ./make.d/env.d/Makefile.env.defaults
+  . ./make/env/Makefile.env.defaults
 }
 
 write_toc() {
