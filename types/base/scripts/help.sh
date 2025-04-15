@@ -1,5 +1,5 @@
 # shellcheck source=/dev/null
-. "${NIDEOVIM_MAKEFILE_DIR:-.}/make/lib/color.sh"
+. "${NIDEOVIM_MAKEFILE_DIR:-.}/scripts/lib/color.sh"
 
 main() {
   set_print_color_default

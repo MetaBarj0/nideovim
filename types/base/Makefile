@@ -6,19 +6,19 @@ export
 SHELL := /bin/bash
 
 help:
-	@. make/scripts/help.sh
+	@. scripts/help.sh
 
 init:
-	@. make/scripts/init.sh
+	@. scripts/init.sh
 
 build:
-	@. make/scripts/build.sh
+	@. scripts/build.sh
 
 up:
-	@. make/scripts/up.sh
+	@. scripts/up.sh
 
 shell:
-	@. make/scripts/shell.sh
+	@. scripts/shell.sh
 
 down:
-	@. make/scripts/down.sh
+	@. scripts/down.sh

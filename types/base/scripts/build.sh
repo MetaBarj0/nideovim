@@ -63,7 +63,7 @@ try_to_optimize_image() {
     --build-arg USER_HOME_DIR="$(get_user_home_dir)" \
     --build-arg USER_NAME="$(get_user_name)" \
     --build-arg VOLUME_DIR_NAME="${VOLUME_DIR_NAME}" \
-    --target="${target_stage?}" \
+    --target="${target_stage?target_stage must be defined}" \
     -t "${COMPOSE_PROJECT_NAME}"_ide_image \
     -f docker/ide/ide.optimized.Dockerfile \
     docker/ide
