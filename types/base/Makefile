@@ -1,9 +1,9 @@
+SHELL := /bin/bash
+
 include make/variables.Makefile
 include make/targets.Makefile
 
 export
-
-SHELL := /bin/bash
 
 help:
 	@. scripts/help.sh
@@ -17,8 +17,11 @@ build:
 up:
 	@. scripts/up.sh
 
-shell:
-	@. scripts/shell.sh
+login:
+	@. scripts/login.sh
 
 down:
 	@. scripts/down.sh
+
+clean: down
+	@. scripts/clean.sh

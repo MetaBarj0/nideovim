@@ -1,9 +1,6 @@
 Makefile.env:
 	@. scripts/Makefile.env.sh
 
-clean: down
-	@. scripts/clean.sh
-
 build: target_stage=end
 build: build_type=unoptimized
 
