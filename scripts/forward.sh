@@ -19,6 +19,8 @@ forward_target_to_instance() {
 
   cd instances/"$instance_id"/"$instance_type" || return 1
 
+  export INSTANCE_ID=$instance_id
+
   make --no-print-directory "$target"
 
   cd - >/dev/null || return 1

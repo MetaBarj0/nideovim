@@ -1,5 +1,5 @@
-export_project_name() {
-  export COMPOSE_PROJECT_NAME
+export_compose_project_name() {
+  export COMPOSE_PROJECT_NAME="${INSTANCE_ID}_${PROJECT_NAME}"
 }
 
 export_user_home_dir() {
@@ -13,7 +13,7 @@ export_user_home_dir() {
 }
 
 export_variables() {
-  export_project_name &&
+  export_compose_project_name &&
     export_user_home_dir
 }
 

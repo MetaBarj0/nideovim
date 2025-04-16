@@ -75,6 +75,10 @@ ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 ARG USER_UID=0
 RUN <<EOF
+  change_docker_group_id() {
+    groupmod -o -g ${USER_GID} docker
+  }
+
   add_non_root_user() {
     useradd \
       -l \
@@ -93,7 +97,8 @@ RUN <<EOF
     if [ ${ROOTLESS} -eq 0 ]; then
       exit 0
     else
-      add_non_root_user &&
+      change_docker_group_id &&
+        add_non_root_user &&
         setup_sudo
     fi
   }
@@ -330,7 +335,8 @@ RUN find -- configuration/*/USER_HOME_DIR \
 
 # `end` stage name is important as it is the default target stage for a build
 FROM full_upgrade_no_cache AS end
-ARG COMPOSE_PROJECT_NAME=nideovim
+ARG INSTANCE_ID=0
+ARG PROJECT_NAME=nideovim
 ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 ARG VOLUME_DIR_NAME=workspace
@@ -359,4 +365,5 @@ ENV NPM_PREFIX_DIR=${USER_HOME_DIR}/.npm-prefix
 ENV NEOVIM_INSTALL_DIR=${USER_HOME_DIR}/.neovim
 ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin:${NPM_PREFIX_DIR}/bin:${NEOVIM_INSTALL_DIR}/bin:${USER_HOME_DIR}/.bin
 ENV EDITOR=nvim
-LABEL project=${COMPOSE_PROJECT_NAME}
+LABEL instance-id=${INSTANCE_ID}
+LABEL project-name=${PROJECT_NAME}

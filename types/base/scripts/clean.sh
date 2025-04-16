@@ -3,7 +3,8 @@ main() {
   image_ids_get_cmd="$(
     cat <<EOF
 docker image ls -q \
-  --filter "label=project=${COMPOSE_PROJECT_NAME}" \
+  --filter "label=project-name=${PROJECT_NAME}" \
+  --filter "label=instance-id=${INSTANCE_ID}" \
   | sort | uniq
 EOF
   )"

@@ -33,9 +33,10 @@ get_user_uid() {
 main() {
   docker build \
     --build-arg CACHE_NONCE="$(date +%s)" \
-    --build-arg COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME}" \
+    --build-arg INSTANCE_ID="${INSTANCE_ID}" \
     --build-arg LLVM_VERSION="${LLVM_VERSION}" \
     --build-arg NODEJS_VERSION="${NODEJS_VERSION}" \
+    --build-arg PROJECT_NAME="${PROJECT_NAME}" \
     --build-arg ROOTLESS="${ROOTLESS}" \
     --build-arg USER_GID="$(get_user_gid)" \
     --build-arg USER_HOME_DIR="$(get_user_home_dir)" \
@@ -43,7 +44,7 @@ main() {
     --build-arg USER_UID="$(get_user_uid)" \
     --build-arg VOLUME_DIR_NAME="${VOLUME_DIR_NAME}" \
     --target="${TARGET_STAGE?}" \
-    -t "${COMPOSE_PROJECT_NAME}"_ide_image \
+    -t "${INSTANCE_ID}_${PROJECT_NAME}_ide_image" \
     -f docker/ide/ide.Dockerfile \
     docker/ide
 }

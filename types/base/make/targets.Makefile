@@ -6,6 +6,6 @@ build: TARGET_STAGE=end
 inspect:
 	@. scripts/inspect.sh
 
-nuke: down_removes_volumes=yes
+nuke: DOWN_REMOVES_VOLUMES=yes
 nuke:
 	@. scripts/down.sh

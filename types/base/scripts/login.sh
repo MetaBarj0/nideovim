@@ -1,13 +1,16 @@
 container_is_running() {
   local container_id &&
     container_id="$(
-      docker ps -q --filter Name="${COMPOSE_PROJECT_NAME}"_ide_container
+      docker ps -q \
+        --filter Name="${COMPOSE_PROJECT_NAME}"_ide_container
     )"
 
   [ -n "${container_id}" ]
 }
 
 main() {
+  COMPOSE_PROJECT_NAME="${INSTANCE_ID}_${PROJECT_NAME}"
+
   if ! container_is_running; then
     cat <<EOF >&2
 ${COMPOSE_PROJECT_NAME} ide service container is not running.
