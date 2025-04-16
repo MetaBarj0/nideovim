@@ -1,8 +1,7 @@
 Makefile.env:
 	@. scripts/Makefile.env.sh
 
-build: target_stage=end
-build: build_type=unoptimized
+build: TARGET_STAGE=end
 
 inspect:
 	@. scripts/inspect.sh

@@ -23,14 +23,14 @@ RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates curl gnupg
+  && apt-get install -y --no-install-recommends ca-certificates curl
 RUN install -m 0755 -d /etc/apt/keyrings
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-RUN chmod a+r /etc/apt/keyrings/docker.gpg
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
+  && chmod a+r /etc/apt/keyrings/docker.asc
 # hadolint ignore=SC1091
 RUN echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
   "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
   tee /etc/apt/sources.list.d/docker.list > /dev/null
 RUN \
@@ -38,11 +38,10 @@ RUN \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends \
-  docker-ce-cli docker-buildx-plugin docker-compose-plugin
-# Adding the docker group manually
+  docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 FROM install_docker_cli AS llvm
-ARG LLVM_VERSION=19
+ARG LLVM_VERSION=20
 RUN wget --quiet https://apt.llvm.org/llvm.sh \
   && chmod +x llvm.sh
 RUN <<EOF
@@ -76,10 +75,6 @@ ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 ARG USER_UID=0
 RUN <<EOF
-  prepare_docker_group() {
-    groupadd -o -g ${USER_GID} docker
-  }
-
   add_non_root_user() {
     useradd \
       -l \
@@ -98,8 +93,7 @@ RUN <<EOF
     if [ ${ROOTLESS} -eq 0 ]; then
       exit 0
     else
-      prepare_docker_group &&
-        add_non_root_user &&
+      add_non_root_user &&
         setup_sudo
     fi
   }
@@ -121,7 +115,6 @@ RUN \
 USER ${USER_NAME}
 WORKDIR ${USER_HOME_DIR}
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-# LINT: I know, not a problem here
 # hadolint ignore=SC2015
 RUN \
   [ $(arch) = 'aarch64' ] && nodejs_arch='arm64' \
@@ -149,7 +142,6 @@ RUN \
 USER ${USER_NAME}
 WORKDIR ${USER_HOME_DIR}
 RUN mkdir .nodejs
-# LINT: Not an issue here
 # hadolint ignore=SC2035
 RUN <<EOF
   tar x \
@@ -336,8 +328,7 @@ RUN find -- configuration/*/USER_HOME_DIR \
   -maxdepth 1 -not -name 'USER_HOME_DIR' \
   -exec cp -r {} ${USER_HOME_DIR} ';'
 
-# `end` stage name is important as it is the only stage name allowing image to
-# be optimized
+# `end` stage name is important as it is the default target stage for a build
 FROM full_upgrade_no_cache AS end
 ARG COMPOSE_PROJECT_NAME=nideovim
 ARG USER_HOME_DIR=/root
