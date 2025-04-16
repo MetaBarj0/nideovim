@@ -32,8 +32,8 @@ get_user_uid() {
 
 main() {
   docker build \
-    --build-arg CACHE_NONCE="$(date +%s)" \
     --build-arg INSTANCE_ID="${INSTANCE_ID}" \
+    --build-arg LAST_UPGRADE_TIMESTAMP="${LAST_UPGRADE_TIMESTAMP:-0}" \
     --build-arg LLVM_VERSION="${LLVM_VERSION}" \
     --build-arg NODEJS_VERSION="${NODEJS_VERSION}" \
     --build-arg PROJECT_NAME="${PROJECT_NAME}" \

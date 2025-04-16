@@ -25,3 +25,6 @@ down:
 
 clean: down
 	@. scripts/clean.sh
+
+upgrade:
+	@. scripts/build.sh

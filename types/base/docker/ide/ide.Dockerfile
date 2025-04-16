@@ -1,5 +1,6 @@
 # hadolint global ignore=DL3008,DL3016
 FROM debian:stable-slim AS upgraded
+ARG LAST_UPGRADE_TIMESTAMP=0
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -311,18 +312,7 @@ COPY --from=build_neovim \
   --chown=${USER_NAME}:${USER_NAME} \
   ${USER_HOME_DIR}/.neovim ${USER_HOME_DIR}/.neovim/
 
-FROM install_built_oss AS full_upgrade_no_cache
-ARG CACHE_NONCE=1
-ARG USER_NAME=root
-USER root
-RUN \
-  --mount=type=cache,target=/var/cache/apt,sharing=locked \
-  --mount=type=cache,target=/var/lib/apt,sharing=locked \
-  apt-get update \
-  && apt-get full-upgrade -y --no-install-recommends
-USER ${USER_NAME}
-
-FROM full_upgrade_no_cache AS install_configuration
+FROM install_built_oss AS install_configuration
 ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 USER ${USER_NAME}
@@ -334,7 +324,7 @@ RUN find -- configuration/*/USER_HOME_DIR \
   -exec cp -r {} ${USER_HOME_DIR} ';'
 
 # `end` stage name is important as it is the default target stage for a build
-FROM full_upgrade_no_cache AS end
+FROM install_built_oss AS end
 ARG INSTANCE_ID=0
 ARG PROJECT_NAME=nideovim
 ARG USER_HOME_DIR=/root
