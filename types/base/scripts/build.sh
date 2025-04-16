@@ -30,10 +30,24 @@ get_user_uid() {
   fi
 }
 
-main() {
+update_last_upgrade_timestamp() {
+  # NOTE: handle the upgrade target
+  if [ -n "$LAST_UPGRADE_TIMESTAMP" ]; then
+    return
+  fi
+
+  if [ -f metadata ]; then
+    # shellcheck source=/dev/null
+    . metadata
+  fi
+
+  LAST_UPGRADE_TIMESTAMP="${LAST_UPGRADE_TIMESTAMP:-$(date +%s)}"
+}
+
+build() {
   docker build \
     --build-arg INSTANCE_ID="${INSTANCE_ID}" \
-    --build-arg LAST_UPGRADE_TIMESTAMP="${LAST_UPGRADE_TIMESTAMP:-0}" \
+    --build-arg LAST_UPGRADE_TIMESTAMP="${LAST_UPGRADE_TIMESTAMP}" \
     --build-arg LLVM_VERSION="${LLVM_VERSION}" \
     --build-arg NODEJS_VERSION="${NODEJS_VERSION}" \
     --build-arg PROJECT_NAME="${PROJECT_NAME}" \
@@ -47,6 +61,21 @@ main() {
     -t "${INSTANCE_ID}_${PROJECT_NAME}_ide_image" \
     -f docker/ide/ide.Dockerfile \
     docker/ide
+}
+
+update_metadata() {
+  if [ ! -f metadata ]; then
+    echo "LAST_UPGRADE_TIMESTAMP=$LAST_UPGRADE_TIMESTAMP" >metadata
+  fi
+
+  sed -E "s/LAST_UPGRADE_TIMESTAMP=.*/LAST_UPGRADE_TIMESTAMP=$LAST_UPGRADE_TIMESTAMP/" \
+    -i'' metadata
+}
+
+main() {
+  update_last_upgrade_timestamp &&
+    update_metadata &&
+    build
 }
 
 main
