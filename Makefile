@@ -1,5 +1,5 @@
 .PHONY: all help help-help new new-help set-default set-default-help \
-	instance-help instance-help-help
+	instance-help instance-help-help delete delete-help
 
 SHELL := /bin/bash
 
@@ -15,6 +15,12 @@ help-help:
 
 new:
 	@. scripts/new.sh
+
+delete:
+	@. scripts/delete.sh
+
+delete-help:
+	@. scripts/help/delete-help.sh
 
 new-help:
 	@. scripts/help/new-help.sh

@@ -106,9 +106,25 @@ boost the developer productivity, especially if the team uses `nideovim`.
 6. You can access the help system of your new instance by typing `make
    instance-help`. It may contain valuable information on how this `instance`
    work and what kind of project it can support.
-7. ==TODO==
+7. You can then start the `instance` with the `make up` command.
+8. Once it's started, you can login into the environment with `make login`
+9. Unleash you raw creativity power into this new `instance` using all the
+   tools at your disposal.
+   HINT: type `make new build up login` to create and use your `instance` with
+         a single command!
+10. Need a break? Just logout from your `instance` with `ctrl-d`. You can
+    re-enter in it later on with `make login`.
+11. Your nasty project's done? Angry after `nideovim`, want to erase your
+    `instance` from the surface of the Earth? Whatever your reasons, you can
+    remove all traces of your `instance` with the `make nuke` command.
+    If you find it's a bit extreme, take a look at your `instance` specific
+    help message with the `make instance-help` command and learn how to `stop`,
+    `rebuild` or even `upgrade` it.
+12. Once your `instance` artifact are deleted (understand you `nuke`d it like a
+    psychopath), you can `delete` the instance from `nideovim`. You can
+    re-create it later with `make new` fortunately!
 
-### For `type` maintainers
+### For `types` maintainers
 
 1. Clone the `nideovim` repository
 2. `make help` is your best friend to get started

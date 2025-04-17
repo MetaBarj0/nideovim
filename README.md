@@ -39,3 +39,7 @@ For MacOS, ensure to install `gsed` using Homebrew for instance.
 ## how to use?
 
 - a good start is to type `make help` 󰋖
+- the next step is to type `make help-help` (for the boldest of you).
+- to get even more help, type `make help-help-help-help-help-help-help`
+  - Nah just kidding, `help-help` is the maximum level.
+- More seriously, create an `instance` and try the thing to get an opinion.

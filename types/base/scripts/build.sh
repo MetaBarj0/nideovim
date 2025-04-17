@@ -41,7 +41,7 @@ update_last_upgrade_timestamp() {
     . metadata
   fi
 
-  LAST_UPGRADE_TIMESTAMP="${LAST_UPGRADE_TIMESTAMP:-$(date +%s)}"
+  LAST_UPGRADE_TIMESTAMP=0
 }
 
 build() {

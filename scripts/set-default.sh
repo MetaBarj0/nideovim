@@ -1,5 +1,3 @@
-set -o pipefail
-
 . scripts/lib/instance.sh
 
 set_default_instance_id() {

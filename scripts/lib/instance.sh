@@ -1,3 +1,5 @@
+set -o pipefail
+
 . scripts/lib/funcshional.sh
 . scripts/lib/type.sh
 
@@ -10,7 +12,7 @@ is_instance_id_valid() {
 report_no_instance_then_exit() {
   echo 'No instance found. Run make new to create one.' >&2
 
-  exit 1
+  return 1
 }
 
 get_instance_directories() {

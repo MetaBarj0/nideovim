@@ -36,3 +36,13 @@ any_else() {
 
   eval "$handler"
 }
+
+count() {
+  local c=0
+
+  while read -e -r; do
+    c=$((c + 1))
+  done
+
+  echo $c
+}
