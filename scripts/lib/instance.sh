@@ -89,13 +89,20 @@ present_instances() {
     pend
 }
 
+sanitize_metadata_if_applicable() {
+  if [ ! -d "instances/$DEFAULT_INSTANCE_ID" ]; then
+    unset DEFAULT_INSTANCE_ID
+
+    sed -E "/DEFAULT_INSTANCE_ID=.*/d" \
+      -i'' instances/metadata
+  fi
+}
+
 try_get_default_instance_id() {
   if [ -f instances/metadata ]; then
     # shellcheck source=/dev/null
     . instances/metadata
   fi
 
-  if [ ! -d "instances/$DEFAULT_INSTANCE_ID" ]; then
-    unset DEFAULT_INSTANCE_ID
-  fi
+  sanitize_metadata_if_applicable
 }

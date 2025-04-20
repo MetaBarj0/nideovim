@@ -1,3 +1,4 @@
+# shellcheck source=lib/instance.sh
 . scripts/lib/instance.sh
 
 set_default_instance_id() {

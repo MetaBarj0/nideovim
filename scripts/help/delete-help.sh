@@ -4,7 +4,7 @@ The \`make delete\` command is responsible to delete an existing \`instance\`.
 The process is fully interactive and divided in 4 steps:
 
 1. You have to select the \`instance\` to delete among existing \`instances\`.
-2. The \`instance\` must not have any built or running artifacts. it means that
+2. The \`instance\` must not have any build or run artifacts. It means that if
    it remains any docker image, docker container or docker volume associated to
    the \`instance\` you try to delete, it will fail.
    HINT: if your \`instance\` is a descendant of the \`base type\`, you can
