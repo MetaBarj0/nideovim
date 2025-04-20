@@ -9,7 +9,7 @@ is_instance_id_valid() {
   [ -n "$id" ] && [ -d "instances/$id" ]
 }
 
-report_no_instance_then_exit() {
+report_no_instance_error() {
   echo 'No instance found. Run make new to create one.' >&2
 
   return 1
@@ -35,7 +35,7 @@ get_instance_type() {
   echo "$type_in_instance"
 }
 
-is_not_instance_id() {
+is_not_default_instance_id() {
   [ -z "$DEFAULT_INSTANCE_ID" ] || [ "$1" -ne "$DEFAULT_INSTANCE_ID" ]
 }
 
@@ -80,21 +80,22 @@ EOF
 }
 
 present_instances() {
-  local all_instances_info &&
-    all_instances_info=$(get_instance_directories |
-      any_else report_no_instance_then_exit |
-      filter is_not_instance_id |
-      push_front "$DEFAULT_INSTANCE_ID" |
-      transform print_instance_info) || exit $?
-
-  while read -r -e instance_info; do
-    echo "$instance_info"
-  done <<<"$all_instances_info"
+  get_instance_directories |
+    pstart |
+    pthen any_else report_no_instance_error |
+    pthen filter is_not_default_instance_id |
+    pthen push_front "$DEFAULT_INSTANCE_ID" |
+    pthen transform print_instance_info |
+    pend
 }
 
 try_get_default_instance_id() {
   if [ -f instances/metadata ]; then
     # shellcheck source=/dev/null
     . instances/metadata
+  fi
+
+  if [ ! -d "instances/$DEFAULT_INSTANCE_ID" ]; then
+    unset DEFAULT_INSTANCE_ID
   fi
 }

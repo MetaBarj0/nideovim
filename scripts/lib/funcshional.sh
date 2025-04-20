@@ -1,11 +1,17 @@
+set -o pipefail
+
+sink() {
+  while read -e -r line; do
+    echo "$line"
+  done
+}
+
 push_front() {
   if [ -n "$1" ]; then
     echo "$1"
   fi
 
-  while read -e -r line; do
-    echo "$line"
-  done
+  sink
 }
 
 filter() {
@@ -22,7 +28,7 @@ transform() {
   local transformer=$1
 
   while read -e -r item; do
-    eval "$transformer" "$item"
+    "$transformer" "$item"
   done
 }
 
@@ -30,11 +36,11 @@ any_else() {
   local handler="$1"
 
   while read -e -r line; do
-    unset handler
+    handler=:
     echo "$line"
   done
 
-  eval "$handler"
+  "$handler"
 }
 
 count() {
@@ -45,4 +51,69 @@ count() {
   done
 
   echo $c
+}
+
+pstart() {
+  echo 'local pipeline_last_exit_code=0'
+
+  sink
+}
+
+_pstage() {
+  local from=$1 && shift
+  local f="$1" && shift
+
+  local output &&
+    output="$("$f" "$@")"
+
+  local exit_code=$?
+
+  if [ $exit_code -ne 0 ]; then
+    echo "local pipeline_last_exit_code=$exit_code; \
+          local pipeline_error_info=\"$from failure with $f call\""
+  else
+    echo "local pipeline_last_exit_code=0"
+  fi
+
+  sink
+
+  echo "$output"
+}
+
+pthen() {
+  read -e -r pipeline_header
+
+  eval "$pipeline_header"
+
+  # shellcheck disable=SC2154
+  if [ "$pipeline_last_exit_code" -ne 0 ]; then
+    echo "$pipeline_header"
+
+    sink
+
+    return "$pipeline_last_exit_code"
+  fi
+
+  _pstage pthen "$@"
+}
+
+pcatch() {
+  read -e -r pipeline_header
+
+  eval "$pipeline_header"
+
+  # shellcheck disable=SC2154
+  if [ "$pipeline_last_exit_code" -eq 0 ]; then
+    sink
+
+    return 0
+  fi
+
+  _pstage pcatch "$@"
+}
+
+pend() {
+  read -e -r
+
+  sink
 }
