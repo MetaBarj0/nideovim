@@ -42,8 +42,7 @@ ask_instance_to_interact_with() {
 }
 
 fallback_forward() {
-  try_get_default_instance_id &&
-    present_instances &&
+  present_instances &&
     ask_instance_to_interact_with "$1"
 }
 

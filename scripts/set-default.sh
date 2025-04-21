@@ -1,4 +1,3 @@
-# shellcheck source=lib/instance.sh
 . scripts/lib/instance.sh
 
 set_default_instance_id() {
@@ -33,8 +32,7 @@ ask_for_new_default_instance() {
 }
 
 main() {
-  try_get_default_instance_id &&
-    present_instances &&
+  present_instances &&
     ask_for_new_default_instance
 }
 

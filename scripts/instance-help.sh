@@ -29,8 +29,7 @@ ask_instance_to_interact_with() {
 }
 
 main() {
-  try_get_default_instance_id &&
-    present_instances &&
+  present_instances &&
     ask_instance_to_interact_with
 }
 

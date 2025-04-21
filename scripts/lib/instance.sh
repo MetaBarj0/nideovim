@@ -80,13 +80,14 @@ EOF
 }
 
 present_instances() {
-  get_instance_directories |
+  try_get_default_instance_id &&
+    get_instance_directories |
     pstart |
-    pthen any_else report_no_instance_error |
-    pthen filter is_not_default_instance_id |
-    pthen push_front "$DEFAULT_INSTANCE_ID" |
-    pthen transform print_instance_info |
-    pend
+      pthen any_else report_no_instance_error |
+      pthen filter is_not_default_instance_id |
+      pthen push_front "$DEFAULT_INSTANCE_ID" |
+      pthen transform print_instance_info |
+      pend
 }
 
 sanitize_metadata_if_applicable() {
