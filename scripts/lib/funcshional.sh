@@ -1,7 +1,7 @@
 set -o pipefail
 
 sink() {
-  while read -e -r line; do
+  while IFS= read -e -r line; do
     echo "$line"
   done
 }
@@ -17,7 +17,7 @@ push_front() {
 filter() {
   local predicate="$1"
 
-  while read -e -r item; do
+  while IFS= read -e -r item; do
     if eval "$predicate $item"; then
       echo "$item"
     fi
@@ -25,17 +25,17 @@ filter() {
 }
 
 transform() {
-  local transformer=$1
+  local transformer=$1 && shift
 
-  while read -e -r item; do
-    "$transformer" "$item"
+  while IFS= read -e -r item; do
+    "$transformer" "$item" "$@"
   done
 }
 
 any_else() {
   local handler="$1"
 
-  while read -e -r line; do
+  while IFS= read -e -r line; do
     handler=:
     echo "$line"
   done
@@ -46,7 +46,7 @@ any_else() {
 count() {
   local c=0
 
-  while read -e -r; do
+  while IFS= read -e -r; do
     c=$((c + 1))
   done
 
@@ -81,7 +81,7 @@ _pstage() {
 }
 
 pthen() {
-  read -e -r pipeline_header
+  IFS= read -e -r pipeline_header
 
   eval "$pipeline_header"
 
@@ -98,7 +98,7 @@ pthen() {
 }
 
 pcatch() {
-  read -e -r pipeline_header
+  IFS= read -e -r pipeline_header
 
   eval "$pipeline_header"
 
@@ -113,7 +113,7 @@ pcatch() {
 }
 
 pend() {
-  read -e -r
+  IFS= read -e -r
 
   sink
 }

@@ -1,0 +1,19 @@
+# The base type does not have ancestor
+TYPE_ANCESTOR=
+TYPE_INFO=$(cat <<EOF
+This is the \`base\` type, ancestor of all \`types\`.
+
+Despite its name, this \`type\` is perfectly capable to handle quite a lot of
+project types.
+For example, \`nideovim\` itself has been built and tested using the \`base\`
+type.
+
+More specifically, this \`type\` can support C/C++ (llvm), Node.js and bash
+projects.
+
+You should use the \`base type\` as \`type\` ancestor, should you plan to
+create your own \`type\`.
+Of course, you can also rely on a \`type\` that has the \`base type\` as
+ancestor.
+EOF
+)

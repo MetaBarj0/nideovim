@@ -39,6 +39,13 @@ is_not_default_instance_id() {
   [ -z "$DEFAULT_INSTANCE_ID" ] || [ "$1" -ne "$DEFAULT_INSTANCE_ID" ]
 }
 
+get_longest_instance_type_name() {
+  find instances/* -maxdepth 1 -mindepth 1 -type d -exec basename {} \; |
+    awk '{print length}' |
+    sort -nr |
+    head -n1
+}
+
 print_instance_info() {
   local instance_id=$1
 
@@ -55,7 +62,7 @@ print_instance_info() {
   fi
 
   local longest_type_name &&
-    longest_type_name="$(get_longest_type_name)"
+    longest_type_name="$(get_longest_instance_type_name)"
 
   printf "%-2s id: %s type: %-${longest_type_name}s name: %s\n" \
     "$prefix" "$instance_id" "$instance_type" "$project_name"

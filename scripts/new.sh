@@ -1,11 +1,4 @@
-present_types() {
-  find ./types -mindepth 1 -maxdepth 1 -type d -exec basename {} \; |
-    sed -e 's/^/  - /'
-}
-
-is_valid_type() {
-  [ -n "$1" ] && [ -d "./types/$1" ]
-}
+. scripts/lib/type.sh
 
 ask_type() {
   echo First, declare the type of your new instance.
@@ -13,7 +6,7 @@ ask_type() {
   while ! is_valid_type "${CHOSEN_TYPE}"; do
     printf '\nChoose one value among the following list:\n\n'
 
-    present_types
+    present_type_names
 
     echo
     read -e -r \
