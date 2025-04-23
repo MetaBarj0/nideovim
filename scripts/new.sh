@@ -42,16 +42,21 @@ copy_type_to_staging_directory() {
   cp -r types/"$CHOSEN_TYPE" instances/staging/$INSTANCE_ID
 }
 
-copy_ancestor_type_if_applicable() {
+create_ancestor_tree() {
   # shellcheck source=/dev/null
   . types/"$CHOSEN_TYPE"/metadata
 
-  if [ -z "$TYPE_ANCESTOR" ]; then
-    return
-  fi
+  local ancestor_tree=instances/staging/"$INSTANCE_ID"/"$CHOSEN_TYPE"/ancestor
 
-  mkdir -p instances/staging/$INSTANCE_ID/"$CHOSEN_TYPE"/ancestor
-  cp -r types/"$TYPE_ANCESTOR"/* instances/staging/$INSTANCE_ID/"$CHOSEN_TYPE"/ancestor
+  while [ -n "$TYPE_ANCESTOR" ]; do
+    mkdir -p "$ancestor_tree"
+    cp -r types/"$TYPE_ANCESTOR"/* "$ancestor_tree"
+
+    # shellcheck source=/dev/null
+    . "$ancestor_tree"/metadata
+    ancestor_tree="$ancestor_tree/ancestor"
+  done
+
 }
 
 init_instance() {
@@ -105,7 +110,7 @@ commit_staging() {
 create_instance() {
   create_staging_directory &&
     copy_type_to_staging_directory &&
-    copy_ancestor_type_if_applicable &&
+    create_ancestor_tree &&
     commit_staging &&
     init_instance
 }

@@ -1,7 +1,7 @@
 # NOTE: As there is an ancestor for this type, a base image is specified here.
 #       Take a look in the build script attached to the build make target to
 #       get more insights.
-ARG BASE_IMAGE=nideovim_next_react
+ARG BASE_IMAGE=nideovim_next_react_ide_image
 
 # NOTE: The last build stage must named 'end'. Take a look in the build script
 #       attached to the build make target to get more insights

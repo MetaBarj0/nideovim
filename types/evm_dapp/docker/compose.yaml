@@ -1,0 +1,9 @@
+# NOTE: This file is likely to be the same whatever new type you want to
+#       create. It's a recipe indicating that the ancestor's recipe will be
+#       overriden. Take a look at
+#       https://docs.docker.com/compose/how-tos/multiple-compose-files/include/#include-and-overrides
+#       for more details
+include:
+  - path:
+      - ancestor/docker/compose.yaml
+      - override.yaml

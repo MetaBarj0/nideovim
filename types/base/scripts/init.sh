@@ -1,15 +1,39 @@
 . "${ROOT_DIR}"/scripts/lib/funcshional.sh
 
-# shellcheck source=/dev/null
-. "${ANCESTOR_DIR:-.}"/scripts/lib/color.sh
+get_type_dir() {
+  local type_dir="$TYPE_DIR"
+
+  while [ "$(basename "$type_dir")" = "ancestor" ]; do
+    cd "$type_dir"/.. || return $?
+    type_dir="$(pwd)"
+  done
+
+  echo "$type_dir"
+}
+
+load_ancestor_tree_defaults() {
+  local type_dir="$1"
+
+  while [ -d "$type_dir/ancestor" ]; do
+    # shellcheck source=/dev/null
+    . "$type_dir"/ancestor/scripts/defaults.sh
+
+    type_dir="$type_dir/ancestor"
+  done
+}
 
 load_default_values() {
-  # shellcheck source=/dev/null
-  . scripts/defaults.sh
+  if [ -n "$TYPE_DIR" ]; then
+    local type_dir &&
+      type_dir="$(get_type_dir)"
 
-  if [ -n "$ANCESTOR_DIR" ]; then
     # shellcheck source=/dev/null
-    . "${ANCESTOR_DIR}"/scripts/defaults.sh
+    . "$type_dir"/scripts/defaults.sh
+
+    load_ancestor_tree_defaults "$type_dir"
+  else
+    # shellcheck source=/dev/null
+    . scripts/defaults.sh
   fi
 }
 
@@ -228,24 +252,29 @@ write_type_section_items() {
   output_type_section_items
 }
 
-write_env_file() {
+get_output_file_path() {
   local output_file_path=Makefile.env
 
-  # NOTE: Check with variable only set in another type than base is not
-  #       sufficient as init is called both from the type and also from
-  #       ancestor
-  if [ "$(basename "$(pwd)")" = 'ancestor' ]; then
-    output_file_path=../Makefile.env
-  fi
+  while [ "$(basename "$(pwd)")" = 'ancestor' ]; do
+    cd ..
 
-  write_toc |
+    output_file_path="../$output_file_path"
+  done
+
+  echo "$output_file_path"
+}
+
+write_env_file() {
+  local output_file_path &&
+    output_file_path="$(get_output_file_path)" &&
+    write_toc |
     pstart |
-    pthen write_project_properties |
-    pthen write_ide_tooling |
-    pthen write_authentication |
-    pthen write_ai_integration |
-    pthen write_type_section_items |
-    pend >"$output_file_path"
+      pthen write_project_properties |
+      pthen write_ide_tooling |
+      pthen write_authentication |
+      pthen write_ai_integration |
+      pthen write_type_section_items |
+      pend >"$output_file_path"
 }
 
 prompt_project_name() {
@@ -428,8 +457,7 @@ init() {
 }
 
 handle_int_signal() {
-  set_print_color_default &&
-    write_env_file &&
+  write_env_file &&
     exit $?
 
 }

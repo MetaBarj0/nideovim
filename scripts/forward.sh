@@ -54,5 +54,5 @@ main() {
   fi
 }
 
-# $1: make target to forward
+# NOTE: $1 is the make target to forward
 main "$1"

@@ -126,6 +126,8 @@ boost the developer productivity, especially if the team uses `nideovim`.
 
 ### For `types` maintainers and `type` creators
 
+#### Manual process
+
 1. Clone the `nideovim` repository
 2. `make help` is your best friend to get started
 3. `make list-types` shows you existing types. Maybe existing one is good for
@@ -150,6 +152,10 @@ boost the developer productivity, especially if the team uses `nideovim`.
               your new `type`
             - a `init.sh` defining mandatory function used in the `instance`
               initialization process to build the `Makefile.env` file.
+            - a `Makefile.env.sh` script that is responsible to generate the
+              `type` `Makefile.env` file at `instance` initialization. In
+              general, you just have to rely on the `ancestor` logic for
+              `Makefile.env` file creation.
         4. create docker file needed to build and run `instances` of your newly
            created `type`
             - in the `docker` directory of your `type`
@@ -160,3 +166,13 @@ boost the developer productivity, especially if the team uses `nideovim`.
                 - a `compose.yaml` file.
                 - a `override.yaml` file.
 5. Take a look at the `next_react type` to get more insights.
+
+#### semi-automated process
+
+This way is easier in the step of creation of file and directory structure for
+your new type. Keep in mind However you'll have to edit files according what
+you want to achieve for your `type`.
+
+1. Run the `make new-type` command and answer questions ==TODO==
+2. Once you've answered all questions, edit generated files in your `type`
+   folder accordingly. (Refer to Manual process section)

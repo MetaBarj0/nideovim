@@ -26,3 +26,9 @@ clean: down
 
 upgrade:
 	@. scripts/build.sh
+
+inspect:
+	@. scripts/inspect.sh
+
+nuke:
+	@. scripts/down.sh

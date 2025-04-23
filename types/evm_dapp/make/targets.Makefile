@@ -10,3 +10,4 @@ Makefile.env:
 #       build.sh file, specifying the stage is mandatory here. The end target
 #       must exist as an alias on a build stage in the ide.Dockerfile recipe.
 build: TARGET_STAGE=end
+

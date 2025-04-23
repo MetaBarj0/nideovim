@@ -2,7 +2,7 @@ export_compose_project_name() {
   export COMPOSE_PROJECT_NAME="${INSTANCE_ID}_${PROJECT_NAME}"
 }
 
-export_user_home_dir() {
+export_user_info() {
   if [ "${ROOTLESS}" -eq 0 ]; then
     export USER_HOME_DIR=/root
     export USER_NAME=root
@@ -14,7 +14,7 @@ export_user_home_dir() {
 
 export_variables() {
   export_compose_project_name &&
-    export_user_home_dir
+    export_user_info
 }
 
 main() {
