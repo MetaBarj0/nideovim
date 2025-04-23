@@ -1,0 +1,10 @@
+# NOTE: This is where the overrides take place.
+services:
+  ide:
+    ports:
+      - name: react_dev
+        target: ${REACT_DEV_PORT:-3000}
+        host_ip: 0.0.0.0
+        protocol: tcp
+        published: "${REACT_DEV_PORT:-3000}"
+        mode: host

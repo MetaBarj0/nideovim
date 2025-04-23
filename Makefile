@@ -4,7 +4,10 @@
 
 SHELL := /bin/bash
 
+include make/variables.Makefile
 include make/targets.Makefile
+
+export
 
 all: help
 

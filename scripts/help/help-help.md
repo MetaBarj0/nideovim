@@ -124,10 +124,39 @@ boost the developer productivity, especially if the team uses `nideovim`.
     psychopath), you can `delete` the instance from `nideovim`. You can
     re-create it later with `make new` fortunately!
 
-### For `types` maintainers
+### For `types` maintainers and `type` creators
 
 1. Clone the `nideovim` repository
 2. `make help` is your best friend to get started
 3. `make list-types` shows you existing types. Maybe existing one is good for
    your purposes?
-4. ==TODO==
+4. Following steps assume you want to create a new type
+    1. Find a good name for your `type`
+    2. create a directory into the `types` directory having the name of your
+       `type`
+    3. Within this directory:
+        1. replicate the following directory structure:
+            - docker
+            - make
+            - scripts
+        2. create core files of the `type`:
+            - metadata (contains `type` description and `ancestor type`)
+            - Makefile (contains specific logic and use `ancestor` logic)
+        3. create scripts needed to run your `type`'s logic.
+            - in the `scripts` directory of your `type`
+            - a `build.sh` script to build the docker image of your `type`
+            - a `default.sh` scripts containing overrides from the `ancestor`
+              as well as variables and their default values that are related to
+              your new `type`
+            - a `init.sh` defining mandatory function used in the `instance`
+              initialization process to build the `Makefile.env` file.
+        4. create docker file needed to build and run `instances` of your newly
+           created `type`
+            - in the `docker` directory of your `type`
+            - create the `ide/ide.Dockerfile` should you have any stuff to add
+              to the `ancestor`'s `type` image. This is for the build process
+              of your `instance`
+            - create both:
+                - a `compose.yaml` file.
+                - a `override.yaml` file.
+5. Take a look at the `next_react type` to get more insights.

@@ -42,10 +42,22 @@ copy_type_to_staging_directory() {
   cp -r types/"$CHOSEN_TYPE" instances/staging/$INSTANCE_ID
 }
 
+copy_ancestor_type_if_applicable() {
+  # shellcheck source=/dev/null
+  . types/"$CHOSEN_TYPE"/metadata
+
+  if [ -z "$TYPE_ANCESTOR" ]; then
+    return
+  fi
+
+  mkdir -p instances/staging/$INSTANCE_ID/"$CHOSEN_TYPE"/ancestor
+  cp -r types/"$TYPE_ANCESTOR"/* instances/staging/$INSTANCE_ID/"$CHOSEN_TYPE"/ancestor
+}
+
 init_instance() {
   export DEFAULT_INSTANCE_ID=$INSTANCE_ID
   export CHOSEN_TYPE
-  export FORWARD_FROM_NEW=
+  export FORWARD_FROM_NEW=true
 
   make --no-print-directory init
 
@@ -93,6 +105,7 @@ commit_staging() {
 create_instance() {
   create_staging_directory &&
     copy_type_to_staging_directory &&
+    copy_ancestor_type_if_applicable &&
     commit_staging &&
     init_instance
 }

@@ -1,5 +1,3 @@
-MAKEFILE_DIR := $(shell dirname $(MAKEFILE_LIST))
-
 ifeq ($(MAKELEVEL), 0)
 	# NOTE: those are defined in the system environment variables
 	undefine PROJECT_NAME
@@ -9,3 +7,5 @@ ifeq ($(MAKELEVEL), 0)
 endif
 
 include Makefile.env
+
+export

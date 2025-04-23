@@ -41,7 +41,7 @@ update_last_upgrade_timestamp() {
     . metadata
   fi
 
-  LAST_UPGRADE_TIMESTAMP=0
+  LAST_UPGRADE_TIMESTAMP=${LAST_UPGRADE_TIMESTAMP:-0}
 }
 
 build() {
@@ -64,12 +64,27 @@ build() {
 }
 
 update_metadata() {
+  local last_upgrade_timestamp=$LAST_UPGRADE_TIMESTAMP
+
   if [ ! -f metadata ]; then
-    echo "LAST_UPGRADE_TIMESTAMP=$LAST_UPGRADE_TIMESTAMP" >metadata
+    echo "LAST_UPGRADE_TIMESTAMP=$last_upgrade_timestamp" >metadata
   fi
 
-  sed -E "s/LAST_UPGRADE_TIMESTAMP=.*/LAST_UPGRADE_TIMESTAMP=$LAST_UPGRADE_TIMESTAMP/" \
-    -i'' metadata
+  # NOTE: reading metadata, ensuring the variable is set in the file
+  unset LAST_UPGRADE_TIMESTAMP
+
+  # shellcheck source=/dev/null
+  . metadata
+
+  if [ -n "$LAST_UPGRADE_TIMESTAMP" ]; then
+    sed -E "s/LAST_UPGRADE_TIMESTAMP=.*/LAST_UPGRADE_TIMESTAMP=$last_upgrade_timestamp/" \
+      -i'' metadata
+  else
+    echo "LAST_UPGRADE_TIMESTAMP=$last_upgrade_timestamp" >>metadata
+  fi
+
+  # NOTE: restoring the global variable for later use
+  LAST_UPGRADE_TIMESTAMP=$last_upgrade_timestamp
 }
 
 main() {

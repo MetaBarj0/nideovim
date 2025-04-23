@@ -1,12 +1,26 @@
+. "${ROOT_DIR}"/scripts/lib/funcshional.sh
+
 # shellcheck source=/dev/null
-. "${NIDEOVIM_MAKEFILE_DIR:-.}/scripts/lib/color.sh"
+. "${ANCESTOR_DIR:-.}"/scripts/lib/color.sh
 
 load_default_values() {
-  . ./scripts/defaults.sh
+  # shellcheck source=/dev/null
+  . scripts/defaults.sh
+
+  if [ -n "$ANCESTOR_DIR" ]; then
+    # shellcheck source=/dev/null
+    . "${ANCESTOR_DIR}"/scripts/defaults.sh
+  fi
+}
+
+write_type_toc_items() {
+  if [ "$(type -t output_type_toc_items)" != 'function' ]; then return; fi
+
+  output_type_toc_items
 }
 
 write_toc() {
-  cat <<EOF >>Makefile.env
+  cat <<EOF
 ################################################################################
 # Makefile.env
 #
@@ -22,6 +36,9 @@ write_toc() {
 # IDE TOOLING
 # AUTHENTICATION
 # AI INTEGRATION
+EOF
+  write_type_toc_items
+  cat <<EOF
 #
 ################################################################################
 
@@ -81,7 +98,7 @@ EOF
 }
 
 write_project_properties() {
-  cat <<EOF >>Makefile.env
+  cat <<EOF
 ################################################################################
 # PROJECT PROPERTIES
 ################################################################################
@@ -133,7 +150,7 @@ EOF
 }
 
 write_ide_tooling() {
-  cat <<EOF >>Makefile.env
+  cat <<EOF
 ################################################################################
 # IDE TOOLING
 ################################################################################
@@ -169,7 +186,7 @@ EOF
 }
 
 write_authentication() {
-  cat <<EOF >>Makefile.env
+  cat <<EOF
 ################################################################################
 # AUTHENTICATION
 ################################################################################
@@ -194,7 +211,7 @@ EOF
 }
 
 write_ai_integration() {
-  cat <<EOF >>Makefile.env
+  cat <<EOF
 ################################################################################
 # AI INTEGRATION
 ################################################################################
@@ -205,13 +222,30 @@ ANTHROPIC_API_KEY ?= ${ANTHROPIC_API_KEY}
 EOF
 }
 
+write_type_section_items() {
+  if [ "$(type -t output_type_section_items)" != 'function' ]; then return; fi
+
+  output_type_section_items
+}
+
 write_env_file() {
-  true >Makefile.env &&
-    write_toc &&
-    write_project_properties &&
-    write_ide_tooling &&
-    write_authentication &&
-    write_ai_integration
+  local output_file_path=Makefile.env
+
+  # NOTE: Check with variable only set in another type than base is not
+  #       sufficient as init is called both from the type and also from
+  #       ancestor
+  if [ "$(basename "$(pwd)")" = 'ancestor' ]; then
+    output_file_path=../Makefile.env
+  fi
+
+  write_toc |
+    pstart |
+    pthen write_project_properties |
+    pthen write_ide_tooling |
+    pthen write_authentication |
+    pthen write_ai_integration |
+    pthen write_type_section_items |
+    pend >"$output_file_path"
 }
 
 prompt_project_name() {
@@ -366,18 +400,27 @@ prompt_ai_integration() {
   prompt_anthropic_api_key
 }
 
+prompt_type_sections() {
+  if [ "$(type -t interactive_init_type_sections)" != 'function' ]; then return; fi
+
+  interactive_init_type_sections
+}
+
 init_interactive() {
   prompt_project_properties &&
     prompt_ide_tooling &&
     prompt_authentication &&
     prompt_ai_integration &&
+    prompt_type_sections &&
     write_env_file
 }
 
 init() {
+  local default_flag="$1"
+
   load_default_values
 
-  if [ "$1" = '--defaults' ]; then
+  if [ "$default_flag" = '--defaults' ]; then
     write_env_file
   else
     init_interactive
@@ -395,9 +438,19 @@ setup_signal_handling() {
   trap handle_int_signal INT
 }
 
+source_type_functions() {
+  if [ -z "$TYPE_DIR" ]; then return; fi
+
+  # shellcheck source=/dev/null
+  . "$TYPE_DIR"/scripts/init.sh
+}
+
 main() {
+  local default_flag="$1"
+
   setup_signal_handling &&
-    init "$1"
+    source_type_functions &&
+    init "$default_flag"
 }
 
 main "$@"

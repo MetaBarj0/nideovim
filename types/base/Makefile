@@ -3,8 +3,6 @@ SHELL := /bin/bash
 include make/variables.Makefile
 include make/targets.Makefile
 
-export
-
 help:
 	@. scripts/help.sh
 
