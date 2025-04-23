@@ -19,6 +19,13 @@ build:
 	@$(MAKE) -C ancestor build
 	@. scripts/build.sh
 
+# NOTE: support for upgrading this type docker image. Removing this target and
+#       running make upgrade for your type would have the effect to only
+#       upgrade the base iamge (provided the base image is the eldest ancestor)
+upgrade:
+	@$(MAKE) -C ancestor upgrade
+	@. scripts/build.sh
+
 # NOTE: any target not known from this Makefile is forwarded to the ancestor
 #       Makefile. It is a convenient way to inherit target from the ancestor of
 #       your type.
