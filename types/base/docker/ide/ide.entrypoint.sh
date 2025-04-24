@@ -6,11 +6,11 @@ setup_ssh_authentication() {
   mkdir -p .ssh
   chmod 0755 .ssh
 
-  cat /run/secrets/ssh_public_key_file >.ssh/id_rsa.pub
-  chmod 0444 .ssh/id_rsa.pub
+  cat /run/secrets/ssh_public_key_file >.ssh/id.pub
+  chmod 0444 .ssh/id.pub
 
-  cat /run/secrets/ssh_secret_key_file >.ssh/id_rsa
-  chmod 0400 .ssh/id_rsa
+  cat /run/secrets/ssh_secret_key_file >.ssh/id
+  chmod 0400 .ssh/id
 }
 
 run_live_loop() {
