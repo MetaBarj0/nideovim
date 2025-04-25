@@ -1,6 +1,4 @@
-set -o pipefail
-
-. scripts/lib/funcshional.sh
+. "$ROOT_DIR"/scripts/lib/funcshional.sh
 
 get_type_directories() {
   find ./types -mindepth 1 -maxdepth 1 -type d -exec basename {} \;

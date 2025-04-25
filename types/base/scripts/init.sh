@@ -1,4 +1,4 @@
-. "${ROOT_DIR}"/scripts/lib/funcshional.sh
+. "${ROOT_DIR}"/scripts/lib/instance.sh
 
 get_type_dir() {
   local type_dir="$TYPE_DIR"
@@ -75,6 +75,15 @@ comment() {
   done
 }
 
+get_default_value_for() {
+  local variable="$1"
+
+  # shellcheck source=/dev/null
+  . "$(get_type_dir_from_ancestor_dir "$(pwd)")"/scripts/defaults.sh
+
+  eval echo \$"$variable"
+}
+
 write_project_name_description() {
   cat <<EOF
 The name you want to give to this project.
@@ -83,7 +92,7 @@ in parallel for whatever reasons.
 This variable value is used to name docker images, containers and volumes
 associated with this project.
 The project name must be unique.
-default: nideovim
+default: $(get_default_value_for PROJECT_NAME)
 EOF
 }
 
@@ -103,21 +112,21 @@ Note that pseudo-rootless mode can be activated in Orbstack's virtual
 machines if you have docker installed in this virtual machine.
 It also fits particularly well when used in a WSL2 distribution provided docker
 is installed.
-default: 0
+default: $(get_default_value_for ROOTLESS)
 EOF
 }
 
 write_user_name_description() {
   cat <<EOF
 The user name to use when pseudo-rootless mode is used.
-default: nideovim
+default: $(get_default_value_for NON_ROOT_USER_NAME)
 EOF
 }
 
 write_user_home_dir_description() {
   cat <<EOF
 The home directory of the user created when the pseudo-rootless mode is used.
-default: /home/nideovim
+default: $(get_default_value_for NON_ROOT_USER_HOME_DIR)
 EOF
 }
 
@@ -128,7 +137,7 @@ The hostname to give to the running container of the ide service.
 You may be free to set this value up to your heart desire but keep in mind
 checks are performed by docker itself thus, if you choose something too exotic,
 the behavior might be undefined.
-default: nIDEovim
+default: $(get_default_value_for CONTAINER_HOSTNAME)
 EOF
 }
 
@@ -162,7 +171,7 @@ The version of the LLVM to install in the ide service docker image.
 If you specify an incorrect value, the build may fail.
 Note that the current stable version of the LLVM project may be higher that
 the default proposed version number.
-default: 20
+default: $(get_default_value_for LLVM_VERSION)
 EOF
 }
 
@@ -174,7 +183,7 @@ Specifying the special 'latest' value will provide you with the latest
 available release. Otherwise you have to set a valid semver compliant
 version, for instance 22.4.0. incorrect or not found version will install the
 latest one.
-default: latest
+default: $(get_default_value_for NODEJS_VERSION)
 EOF
 }
 
@@ -183,7 +192,7 @@ write_volume_dir_name_description() {
 Name of the directory within the user home directory of the ide service
 container. This is the target of the volume in which you can store everything
 you need.
-default: workspace
+default: $(get_default_value_for VOLUME_DIR_NAME)
 EOF
 }
 
@@ -210,7 +219,7 @@ write_ssh_public_key_file_description() {
 File path of the public key for ssh authentication. Keep in mind that it MUST
 target a file on the docker host machine. It is especially important when
 your want to run nideovim within another nideovim.
-default: ~/.ssh/id_rsa.pub
+default: $(get_default_value_for SSH_PUBLIC_KEY_FILE)
 EOF
 }
 
@@ -219,7 +228,7 @@ write_ssh_secret_key_file_description() {
 File path of the secret key for ssh authentication. Keep in mind that it MUST
 target a file on the docker host machine. It is especially important when
 your want to run nideovim within another nideovim.
-default: ~/.ssh/id_rsa
+default: $(get_default_value_for SSH_SECRET_KEY_FILE)
 EOF
 }
 
@@ -244,7 +253,7 @@ Your anthropic API key to integrate your neovim workflow with Claude thanks
 to the Claude plugin (https://github.com/pasky/claude.vim)
 You will need to explicitely setup an API key here.
 Keep in mind it is a sensitive information (you may deal with real money).
-default: not_set
+default: $(get_default_value_for ANTHROPIC_API_KEY)
 EOF
 }
 

@@ -1,5 +1,3 @@
-set -o pipefail
-
 . scripts/lib/instance.sh
 
 forward_from_new() {

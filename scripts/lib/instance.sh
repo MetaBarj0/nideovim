@@ -1,7 +1,5 @@
-set -o pipefail
-
-. scripts/lib/funcshional.sh
-. scripts/lib/type.sh
+. "$ROOT_DIR"/scripts/lib/funcshional.sh
+. "$ROOT_DIR"/scripts/lib/type.sh
 
 is_instance_id_valid() {
   local id=$1
@@ -113,4 +111,19 @@ try_get_default_instance_id() {
   fi
 
   sanitize_metadata_if_applicable
+}
+
+get_type_dir_from_ancestor_dir() {
+  local type_dir &&
+    type_dir="$(pwd)"
+
+  while [ "$(basename "$type_dir")" = 'ancestor' ]; do
+    cd "$type_dir"/.. || return $?
+
+    type_dir=$(pwd)
+
+    cd - >/dev/null || return $?
+  done
+
+  echo "$type_dir"
 }

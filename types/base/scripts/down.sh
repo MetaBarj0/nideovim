@@ -1,5 +1,6 @@
 # shellcheck source=lib/compose.sh
 . scripts/lib/compose.sh
+. "$ROOT_DIR"/scripts/lib/instance.sh
 
 export_variables() {
   export_compose_project_name &&

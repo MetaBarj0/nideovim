@@ -1,5 +1,3 @@
-set -o pipefail
-
 . scripts/lib/instance.sh
 . scripts/lib/funcshional.sh
 

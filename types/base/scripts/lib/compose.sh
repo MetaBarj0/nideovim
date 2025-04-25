@@ -11,18 +11,3 @@ export_user_info() {
     export USER_NAME="${NON_ROOT_USER_NAME}"
   fi
 }
-
-get_type_dir_from_ancestor_dir() {
-  local type_dir &&
-    type_dir="$(pwd)"
-
-  while [ "$(basename "$type_dir")" = 'ancestor' ]; do
-    cd "$type_dir"/.. || return $?
-
-    type_dir=$(pwd)
-
-    cd - >/dev/null || return $?
-  done
-
-  echo "$type_dir"
-}
