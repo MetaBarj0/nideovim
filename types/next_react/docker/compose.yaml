@@ -5,5 +5,5 @@
 #       for more details
 include:
   - path:
-      - ancestor/docker/compose.yaml
+      - ../ancestor/docker/compose.yaml
       - override.yaml

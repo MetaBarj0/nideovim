@@ -15,8 +15,7 @@ services:
       - TERM=xterm-256color
       - USER_HOME_DIR
       - VOLUME_DIR_NAME
-    # TODO: customize hostname
-    hostname: ${INSTANCE_ID}_${PROJECT_NAME:-nideovim}
+    hostname: ${CONTAINER_HOSTNAME:-nIDEovim}
     image: ${INSTANCE_ID}_${PROJECT_NAME:-nideovim}_ide_image
     init: true
     post_start:

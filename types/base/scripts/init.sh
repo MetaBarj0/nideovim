@@ -121,6 +121,17 @@ default: /home/nideovim
 EOF
 }
 
+# TODO: dynamic default values depending on the type
+write_container_hostname_description() {
+  cat <<EOF
+The hostname to give to the running container of the ide service.
+You may be free to set this value up to your heart desire but keep in mind
+checks are performed by docker itself thus, if you choose something too exotic,
+the behavior might be undefined.
+default: nIDEovim
+EOF
+}
+
 write_project_properties() {
   cat <<EOF
 ################################################################################
@@ -138,6 +149,9 @@ NON_ROOT_USER_NAME ?= ${NON_ROOT_USER_NAME}
 
 $(write_user_home_dir_description | comment)
 NON_ROOT_USER_HOME_DIR ?= ${NON_ROOT_USER_HOME_DIR}
+
+$(write_container_hostname_description | comment)
+CONTAINER_HOSTNAME ?= ${CONTAINER_HOSTNAME}
 
 EOF
 }
@@ -329,11 +343,25 @@ prompt_non_root_user_directory() {
   echo
 }
 
+prompt_container_hostname() {
+  write_container_hostname_description
+  echo
+
+  read -e -r -p "[${CONTAINER_HOSTNAME}]: " container_hostname
+
+  if [ -n "${container_hostname}" ]; then
+    CONTAINER_HOSTNAME="${container_hostname}"
+  fi
+
+  echo
+}
+
 prompt_project_properties() {
   prompt_project_name &&
     prompt_rootless_mode &&
     prompt_non_root_user_name &&
-    prompt_non_root_user_directory
+    prompt_non_root_user_directory &&
+    prompt_container_hostname
 }
 
 prompt_llvm_version() {
