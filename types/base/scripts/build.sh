@@ -36,9 +36,9 @@ update_last_upgrade_timestamp() {
     return
   fi
 
-  if [ -f metadata ]; then
+  if [ -f builddata ]; then
     # shellcheck source=/dev/null
-    . metadata
+    . builddata
   fi
 
   LAST_UPGRADE_TIMESTAMP=${LAST_UPGRADE_TIMESTAMP:-0}
@@ -63,24 +63,24 @@ build() {
     docker/ide
 }
 
-update_metadata() {
+update_builddata() {
   local last_upgrade_timestamp=$LAST_UPGRADE_TIMESTAMP
 
-  if [ ! -f metadata ]; then
-    echo "LAST_UPGRADE_TIMESTAMP=$last_upgrade_timestamp" >metadata
+  if [ ! -f builddata ]; then
+    echo "LAST_UPGRADE_TIMESTAMP=$last_upgrade_timestamp" >builddata
   fi
 
-  # NOTE: reading metadata, ensuring the variable is set in the file
+  # NOTE: reading builddata, ensuring the variable is set in the file
   unset LAST_UPGRADE_TIMESTAMP
 
   # shellcheck source=/dev/null
-  . metadata
+  . builddata
 
   if [ -n "$LAST_UPGRADE_TIMESTAMP" ]; then
     sed -E "s/LAST_UPGRADE_TIMESTAMP=.*/LAST_UPGRADE_TIMESTAMP=$last_upgrade_timestamp/" \
-      -i'' metadata
+      -i'' builddata
   else
-    echo "LAST_UPGRADE_TIMESTAMP=$last_upgrade_timestamp" >>metadata
+    echo "LAST_UPGRADE_TIMESTAMP=$last_upgrade_timestamp" >>builddata
   fi
 
   # NOTE: restoring the global variable for later use
@@ -89,7 +89,7 @@ update_metadata() {
 
 main() {
   update_last_upgrade_timestamp &&
-    update_metadata &&
+    update_builddata &&
     build
 }
 

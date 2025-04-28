@@ -59,7 +59,7 @@ ensure_instance_has_no_artifact_left() {
     instance_type="$(get_instance_type "$instance_id")"
 
   local instance_name &&
-    instance_name="$(get_instance_name "$instance_id" "$instance_type")"
+    instance_name="$(get_project_name "$instance_id" "$instance_type")"
 
   ensure_instance_has_no_image_left "$instance_id" "$instance_name" &&
     ensure_instance_has_no_volume_left "$instance_id" "$instance_name"

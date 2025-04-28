@@ -9,7 +9,7 @@ export_variables() {
 
 up() {
   docker compose \
-    -f "$(get_type_dir_from_ancestor_dir)"/docker/compose.yaml up \
+    -f "$(get_type_dir_from_current_ancestor_dir)"/docker/compose.yaml up \
     --detach
 }
 

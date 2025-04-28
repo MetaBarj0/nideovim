@@ -15,7 +15,7 @@ This \`type\` has everything the \`base type\` provides plus all facilities to
 develop next/react applications.
 
 Moreover, the \`ide\` docker compose service will expose a port you can
-configure whenn you initialize an \`instance\` from this \`type\`.
+configure when you initialize an \`instance\` from this \`type\`.
 EOF
 )
 

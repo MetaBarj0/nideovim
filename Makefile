@@ -1,6 +1,6 @@
 .PHONY: all help help-help new new-help set-default set-default-help \
 	instance-help instance-help-help delete delete-help list list-help list-types \
-	list-types-help
+	list-types-help migrate migrate-help
 
 SHELL := /bin/bash
 
@@ -52,3 +52,9 @@ list-types:
 
 list-types-help:
 	@. scripts/help/list-types-help.sh
+
+migrate:
+	@. scripts/migrate.sh
+
+migrate-help:
+	@. scripts/help/migrate-help.sh

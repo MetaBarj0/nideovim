@@ -9,7 +9,7 @@ export_variables() {
 
 shutdown_project() {
   local type_dir &&
-    type_dir="$(get_type_dir_from_ancestor_dir)"
+    type_dir="$(get_type_dir_from_current_ancestor_dir)"
 
   if [ "${DOWN_REMOVES_VOLUMES}" = "yes" ]; then
     docker compose \

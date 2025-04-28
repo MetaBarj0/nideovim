@@ -37,18 +37,14 @@ print_type_info() {
 
 present_type_names() {
   get_type_directories |
-    pstart |
-    pthen filter has_correct_structure |
-    pthen transform print_type_name |
-    pend
+    filter has_correct_structure |
+    transform print_type_name
 }
 
 present_types() {
   get_type_directories |
-    pstart |
-    pthen filter has_correct_structure |
-    pthen transform print_type_info |
-    pend
+    filter has_correct_structure |
+    transform print_type_info
 }
 
 is_valid_type() {
@@ -59,4 +55,16 @@ is_valid_type() {
   fi
 
   [ -n "$TYPE_INFO" ]
+}
+
+create_type_signature() {
+  local type_name="$1"
+
+  find types/"$type_name"/ \
+    -type f |
+    sort |
+    xargs md5sum |
+    awk '{print $1}' |
+    md5sum |
+    awk '{print $1}'
 }

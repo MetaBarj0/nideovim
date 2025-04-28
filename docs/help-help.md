@@ -92,7 +92,7 @@ delving into the project.
 One of `nideovim` goals is to shorten as much as possible this setup time to
 boost the developer productivity, especially if the team uses `nideovim`.
 
-#### A typical use case
+#### typical use cases: create, use and delete instance
 
 1. Clone the `nideovim` repository
 2. `make help` is your best friend to get started
@@ -123,6 +123,27 @@ boost the developer productivity, especially if the team uses `nideovim`.
 12. Once your `instance` artifact are deleted (understand you `nuke`d it like a
     psychopath), you can `delete` the instance from `nideovim`. You can
     re-create it later with `make new` fortunately!
+
+#### typical use cases: migrate an outdated instance
+
+Once upon a time, you, working with `nideovim`.
+
+1. First, you created an `instance`.
+2. This `instance` has the `base type` and you've been using it to code your
+   fancy bash project.
+3. Time has passed, your project is in a good shape.
+4. You decide to get the latest commit of `nideovim`, cause you like it a lot!
+5. `git fetch && git pull` and abracadabra, everything is up to date.
+6. After that, you noticed some updates have been done in the `base type`.
+    - It means your current `instance` is not up-to-date anymore regarding the
+      `base type`
+    - You may have noticed updates in the `base type` after the `git pull`
+    - If not, you can see your instance is not up to date at `instance`
+      presentation (`instance` marked as `outdated` instead of `up-to-date`)
+7. You do not feel any fear, because you've got a superpower to fix that:
+    - `make migrate`
+8. Once `migrated` you can resume your project stuff using your up-to-date
+   `instance`.
 
 ### For `types` maintainers and `type` creators
 

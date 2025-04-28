@@ -79,7 +79,7 @@ get_default_value_for() {
   local variable="$1"
 
   # shellcheck source=/dev/null
-  . "$(get_type_dir_from_ancestor_dir "$(pwd)")"/scripts/defaults.sh
+  . "$(get_type_dir_from_current_ancestor_dir "$(pwd)")"/scripts/defaults.sh
 
   eval echo \$"$variable"
 }

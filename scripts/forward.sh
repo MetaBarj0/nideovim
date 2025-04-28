@@ -27,7 +27,7 @@ forward_target_to_instance() {
 ask_instance_to_interact_with() {
   local target=$1
 
-  local instance_id
+  local instance_id="$HINT_INSTANCE_ID"
   while ! is_instance_id_valid "$instance_id"; do
     echo
     read -e -r \

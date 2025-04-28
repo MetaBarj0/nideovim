@@ -1,73 +1,20 @@
 . scripts/lib/type.sh
+. scripts/lib/instance.sh
+. scripts/lib/new.lib.sh
+. scripts/lib/funcshional.sh
 
-ask_type() {
-  echo First, declare the type of your new instance.
+ask_instance_type() {
+  local chosen_type &&
+    while ! is_valid_type "${chosen_type}"; do
+      read -e -r \
+        -p "
+Choose the type of the instance to create among the following list:
+$(present_type_names)
 
-  while ! is_valid_type "${CHOSEN_TYPE}"; do
-    printf '\nChoose one value among the following list:\n\n'
-
-    present_type_names
-
-    echo
-    read -e -r \
-      -p 'Type? ' \
-      CHOSEN_TYPE
-  done
-}
-
-get_latest_instance_id() {
-  find instances \
-    -mindepth 1 -maxdepth 1 \
-    -type d \
-    -exec basename {} \; |
-    grep -E '[0-9]+' |
-    sort -n -r |
-    head -n 1
-}
-
-create_staging_directory() {
-  local latest_instance_id &&
-    latest_instance_id=$(get_latest_instance_id)
-
-  if [ -z "$latest_instance_id" ]; then
-    INSTANCE_ID=0
-  else
-    INSTANCE_ID=$((latest_instance_id + 1))
-  fi
-
-  mkdir -p instances/staging/$INSTANCE_ID
-}
-
-copy_type_to_staging_directory() {
-  cp -r types/"$CHOSEN_TYPE" instances/staging/$INSTANCE_ID
-}
-
-create_ancestor_tree() {
-  # shellcheck source=/dev/null
-  . types/"$CHOSEN_TYPE"/metadata
-
-  local ancestor_tree=instances/staging/"$INSTANCE_ID"/"$CHOSEN_TYPE"/ancestor
-
-  while [ -n "$TYPE_ANCESTOR" ]; do
-    mkdir -p "$ancestor_tree"
-    cp -r types/"$TYPE_ANCESTOR"/* "$ancestor_tree"
-
-    # shellcheck source=/dev/null
-    . "$ancestor_tree"/metadata
-    ancestor_tree="$ancestor_tree/ancestor"
-  done
-
-}
-
-init_instance() {
-  export DEFAULT_INSTANCE_ID=$INSTANCE_ID
-  export CHOSEN_TYPE
-  export FORWARD_FROM_NEW=true
-
-  make --no-print-directory init
-
-  unset DEFAULT_INSTANCE_ID
-  unset FORWARD_FROM_NEW
+Type? " \
+        chosen_type
+    done &&
+    echo "$chosen_type"
 }
 
 set_or_propose_default_instance() {
@@ -103,36 +50,33 @@ set_or_propose_default_instance() {
   echo
 }
 
-commit_staging() {
-  mv ./instances/staging/$INSTANCE_ID instances
-}
+init_instance() {
+  local instance_id="$1"
+  local instance_type="$2"
 
-create_instance() {
-  create_staging_directory &&
-    copy_type_to_staging_directory &&
-    create_ancestor_tree &&
-    commit_staging &&
-    init_instance
+  export DEFAULT_INSTANCE_ID=$instance_id
+  export CHOSEN_TYPE="$instance_type"
+  export FORWARD_FROM_NEW=true
+
+  make --no-print-directory init
+
+  unset DEFAULT_INSTANCE_ID
+  unset FORWARD_FROM_NEW
 }
 
 clear_staging_directory() {
   rm -rf instances/staging
 }
 
-clear_staging_directory_and_exit() {
-  clear_staging_directory
-
-  exit 1
-}
-
 main() {
-  trap clear_staging_directory_and_exit INT
-
-  printf 'Creating new instance...\n\n'
-
-  clear_staging_directory &&
-    ask_type &&
-    create_instance &&
+  # NOTE: Preparing local variables for future io in init_instance
+  eval "$(
+    clear_staging_directory &&
+      ask_instance_type |
+      rtransform create_instance '' |
+        to_var instance_id instance_type
+  )" &&
+    init_instance "$instance_id" "$instance_type" &&
     set_or_propose_default_instance
 }
 

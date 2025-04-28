@@ -10,7 +10,7 @@ export_variables() {
 main() {
   export_variables &&
     docker compose \
-      -f "$(get_type_dir_from_ancestor_dir)"/docker/compose.yaml \
+      -f "$(get_type_dir_from_current_ancestor_dir)"/docker/compose.yaml \
       config
 }
 

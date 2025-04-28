@@ -1,3 +1,4 @@
+# TODO: rename to build.lib.sh
 get_user_home_dir() {
   if [ "${ROOTLESS}" -eq 0 ]; then
     echo /root

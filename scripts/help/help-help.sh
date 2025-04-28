@@ -1,1 +1,1 @@
-cat "scripts/help/help-help.md"
+cat "docs/help-help.md"

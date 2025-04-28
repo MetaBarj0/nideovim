@@ -1,11 +1,7 @@
+# TODO: document this not so trivial lib
 set -o pipefail
 
-sink() {
-  while IFS= read -e -r line; do
-    echo "$line"
-  done
-}
-
+# TODO: local variable for read instructions
 push_front() {
   if [ -n "$1" ]; then
     echo "$1"
@@ -14,33 +10,69 @@ push_front() {
   sink
 }
 
+length() {
+  while IFS= read -e -r item; do
+    printf '%s' "$item" | wc -m
+  done
+}
+
 filter() {
   local predicate="$1"
 
   while IFS= read -e -r item; do
-    if eval "$predicate $item"; then
+    if "$predicate" "$item"; then
       echo "$item"
     fi
   done
 }
 
 transform() {
-  local transformer=$1 && shift
+  local f="$1"
+  shift
 
   while IFS= read -e -r item; do
-    "$transformer" "$item" "$@"
+    local array=()
+    read -r -a array <<<"$item"
+
+    "$f" "${array[@]}" "$@"
   done
+}
+
+rtransform() {
+  local f="$1"
+  shift
+
+  while IFS= read -e -r item; do
+    local array=()
+    read -r -a array <<<"$item"
+
+    "$f" "$@" "${array[@]}"
+  done
+}
+
+sink() {
+  transform echo
+}
+
+skip() {
+  local n="$1"
+
+  while [ -n "$n" ] && [ "$n" -gt 0 ]; do
+    IFS= read -e -r
+    n=$((n - 1))
+  done
+
+  sink
 }
 
 any_else() {
   local handler="$1"
 
-  while IFS= read -e -r line; do
-    handler=:
+  if IFS= read -e -r line; then
     echo "$line"
-  done
-
-  "$handler"
+  else
+    "$handler" "$@"
+  fi
 }
 
 count() {
@@ -51,6 +83,35 @@ count() {
   done
 
   echo $c
+}
+
+to_var() {
+  while IFS= read -e -r line; do
+    local keys &&
+      read -e -r -a keys <<<"$@"
+
+    local values &&
+      read -e -r -a values <<<"$line"
+
+    if [ ${#keys[@]} -ne ${#values[@]} ]; then
+      echo "error in to_var: variable names and values mismatch: \
+${keys[*]} <-> ${values[*]}" >&2
+
+      # FIX: A sink may be needed here?
+
+      return 1
+    fi
+
+    local i=0
+    local result='true'
+
+    while [ $i -lt ${#keys[@]} ]; do
+      result="$result && local ${keys[$i]}=\"${values[$i]}\""
+      i=$((i + 1))
+    done
+
+    echo "$result"
+  done
 }
 
 pstart() {
@@ -77,10 +138,15 @@ _pstage() {
 
   sink
 
-  echo "$output"
+  # NOTE: handles empty lines that must not be printed
+  if [ -n "$output" ]; then
+    echo "$output"
+  fi
 }
 
 pthen() {
+  local pipeline_header=
+
   IFS= read -e -r pipeline_header
 
   eval "$pipeline_header"
@@ -113,7 +179,13 @@ pcatch() {
 }
 
 pend() {
-  IFS= read -e -r
+  local pipeline_header=
+
+  IFS= read -e -r pipeline_header
+
+  eval "$pipeline_header"
 
   sink
+
+  return "$pipeline_last_exit_code"
 }
