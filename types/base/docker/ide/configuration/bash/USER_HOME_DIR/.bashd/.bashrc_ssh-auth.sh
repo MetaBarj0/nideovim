@@ -29,6 +29,7 @@ ensure_correct_ssh_agent_is_running() {
     ssh_agents="$(get_agents_process_list)"
 
   if [ -z "$ssh_agents" ]; then
+    rm "$SSH_AGENT_BIND"
     return 1
   fi
 
@@ -36,6 +37,7 @@ ensure_correct_ssh_agent_is_running() {
     ssh_agent_instance_count="$(echo "$ssh_agents" | wc -l)"
 
   if [ "$ssh_agent_instance_count" -gt 1 ]; then
+    rm "$SSH_AGENT_BIND"
     return 1
   fi
 
@@ -70,14 +72,16 @@ register_identity() {
 }
 
 try_connect_existing_agent() {
-  local ssh_agent_pid=
-  ssh_agent_pid=$(ensure_correct_ssh_agent_is_running) &&
+  local ssh_agent_pid &&
+    ssh_agent_pid=$(ensure_correct_ssh_agent_is_running) &&
     setup_environment "$ssh_agent_pid" &&
-    (
+    {
       register_identity ||
-        prune_system_from_old_agent &&
-        return 1
-    )
+        {
+          prune_system_from_old_agent &&
+            return 1
+        }
+    }
 }
 
 spawn_new_agent() {
