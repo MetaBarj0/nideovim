@@ -31,7 +31,7 @@ ENV FOUNDRY_DIR=${USER_HOME_DIR}/.foundry
 ENV PATH=${PATH}:${FOUNDRY_DIR}/bin
 
 # The last build stage must named 'end'
-FROM install_foundry as end
+FROM install_foundry AS end
 ARG USER_NAME=root
 USER ${USER_NAME}
 RUN npm install -g lcov-parse@1.0.0
