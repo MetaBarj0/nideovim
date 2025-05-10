@@ -19,8 +19,7 @@ USER ${USER_NAME}
 RUN pipx install slither-analyzer \
   && pipx ensurepath
 
-# The last build stage must named 'end'
-FROM install_slither_analyzer AS end
+FROM install_slither_analyzer AS install_foundry
 ARG USER_NAME=root
 ARG USER_HOME_DIR=/root
 USER ${USER_NAME}
@@ -31,3 +30,8 @@ RUN FOUNDRY_DIR=${USER_HOME_DIR}/.foundry ${USER_HOME_DIR}/.foundry/bin/foundryu
 ENV FOUNDRY_DIR=${USER_HOME_DIR}/.foundry
 ENV PATH=${PATH}:${FOUNDRY_DIR}/bin
 
+# The last build stage must named 'end'
+FROM install_foundry as end
+ARG USER_NAME=root
+USER ${USER_NAME}
+RUN npm install -g lcov-parse@1.0.0
