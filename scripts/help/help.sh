@@ -7,6 +7,8 @@ Available targets:
 - \`new\`: create a new environment
 - \`set-default\`: set a default instance among existing instances
 - \`instance-help\`: get a help message of a created instance
+- \`list\`: print a list of existing instances
+- \`list-types\`: print a list of existing instance type you can create
 - \`delete\`: delete an existing \`instance\`.
 - \`migrate\`: migrate an outdated \`instance\` regarding a \`type\`.
 
