@@ -48,7 +48,9 @@ RUN wget --quiet https://apt.llvm.org/llvm.sh \
 RUN <<EOF
   ./llvm.sh ${LLVM_VERSION} all
   update-alternatives --install /usr/bin/cc cc /usr/bin/clang-${LLVM_VERSION} 100
+  update-alternatives --install /usr/bin/cxx cxx /usr/bin/clang++-${LLVM_VERSION} 100
   update-alternatives --install /usr/bin/clang clang /usr/bin/clang-${LLVM_VERSION} 100
+  update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${LLVM_VERSION} 100
   update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-${LLVM_VERSION} 100
   update-alternatives --install /usr/bin/ld ld /usr/bin/lld-${LLVM_VERSION} 100
   update-alternatives --install /usr/bin/lld lld /usr/bin/lld-${LLVM_VERSION} 100
