@@ -1,0 +1,22 @@
+# NOTE: Though the metadata file does not have extension, nideovim expects it
+#       to conform with the bash syntax rules.
+
+# NOTE: Mandatory variable. Indicates the ancestor of this type. You gain a lot
+#       by using base as ancestor as you can leverage all the logic of the base
+#       type in your custom type. You can see this in effect by looking at the
+#       type's Makefile.
+TYPE_ANCESTOR=base
+
+# NOTE: Mandatory variable. Provides the type's description printed with make
+#       list-types command. You should provide a clear description of your type
+#       here to help user choosing it for his project.
+TYPE_INFO=$(cat <<EOF
+This \`type\` has everything the \`base type\` provides plus all facilities to
+develop the TON blockchain project mono-repo at
+https://github.com/ton-blockchain/ton
+
+So far, only the \`build-ubuntu-shared\` has been tested and is supported.
+EOF
+)
+
+
