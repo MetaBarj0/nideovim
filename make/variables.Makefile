@@ -1,6 +1,6 @@
 ROOT_DIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
-# NOTE: to support nideovim in nideovim
+# NOTE: to support nideovim in nideovim (see compose.yaml file in base type)
 unexport ANTHROPIC_API_KEY
 unexport INSTANCE_ID
 unexport PROJECT_NAME

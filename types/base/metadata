@@ -1,5 +1,7 @@
-# The base type does not have ancestor
+# NOTE: The base type does not have ancestor and is designed to be ancestor
+#       (direct or indirect) of all other defined types.
 TYPE_ANCESTOR=
+
 TYPE_INFO=$(cat <<EOF
 This is the \`base\` type, ancestor of all \`types\`.
 

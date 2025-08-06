@@ -177,7 +177,7 @@ Once upon a time, you, working with `nideovim`.
               `type` `Makefile.env` file at `instance` initialization. In
               general, you just have to rely on the `ancestor` logic for
               `Makefile.env` file creation.
-        4. create docker file needed to build and run `instances` of your newly
+        4. create docker files needed to build and run `instances` of your newly
            created `type`
             - in the `docker` directory of your `type`
             - create the `ide/ide.Dockerfile` should you have any stuff to add
