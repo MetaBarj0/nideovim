@@ -21,7 +21,7 @@ build:
 
 # NOTE: support for upgrading this type docker image. Removing this target and
 #       running make upgrade for your type would have the effect to only
-#       upgrade the base iamge (provided the base image is the eldest ancestor)
+#       upgrade the base image (provided the base image is the eldest ancestor)
 upgrade:
 	@$(MAKE) -C ancestor upgrade
 	@. scripts/build.sh

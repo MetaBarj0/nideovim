@@ -1,8 +1,8 @@
-# NOTE: this target is implicitely run when the Makefile is interpreted because
+# NOTE: this target is implicitly run when the Makefile is interpreted because
 #       there is an explicit include Makefile.env directive in the ancestor
 #       Makefile.
 #       This target must be defined here to ensure the Makefile.env file is
-#       create in the right place, that is in the instance directory.
+#       created in the right place, that is in the instance directory.
 Makefile.env:
 	@. scripts/Makefile.env.sh
 
