@@ -1,5 +1,5 @@
 # hadolint global ignore=DL3008,DL3016
-FROM debian:stable-slim AS upgraded
+FROM debian:trixie-slim AS upgraded
 ARG LAST_UPGRADE_TIMESTAMP=0
 RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -13,8 +13,7 @@ RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends \
-  make git ca-certificates wget lsb-release software-properties-common gnupg \
-  curl
+  make git ca-certificates wget lsb-release gnupg curl
 
 FROM core_packages AS install_docker_cli
 # docker installation for debian
