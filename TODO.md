@@ -23,3 +23,9 @@
     - A lot of build stage are replayed
     - it could be avoided
     - and accelerate a lot instance creations
+
+## type specifics
+
+### `evm_dapp`
+
+- add a new `init` setting to specify a backend port exposure.
