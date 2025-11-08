@@ -29,3 +29,10 @@
 ### `evm_dapp`
 
 - add a new `init` setting to specify a backend port exposure.
+  - actually, any port exposure would be better
+
+## `nideovim` extension
+
+- integrate `nideovim` seamlessly as `git` submodule to:
+  - work closely with projects it is supposed to support
+  - allow to create new types not directly integrated in `nideovim`
