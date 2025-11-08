@@ -1,11 +1,6 @@
-# shellcheck source=lib/compose.sh
-. scripts/lib/compose.sh
+# shellcheck source=lib/compose.lib.sh
+. scripts/lib/compose.lib.sh
 . "$ROOT_DIR"/scripts/lib/instance.sh
-
-export_variables() {
-  export_compose_project_name &&
-    export_user_info
-}
 
 up() {
   docker compose \
@@ -14,7 +9,7 @@ up() {
 }
 
 main() {
-  export_variables &&
+  export_variables_for_compose &&
     up
 }
 

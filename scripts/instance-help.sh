@@ -6,6 +6,7 @@ get_instance_help() {
   local instance_type &&
     instance_type="$(get_instance_type "$instance_id")"
 
+  # TODO: make -C instead of changing directory everywhere
   cd instances/"$instance_id"/"$instance_type" || return 1
 
   make --no-print-directory help

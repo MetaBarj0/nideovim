@@ -11,3 +11,8 @@ export_user_info() {
     export USER_NAME="${NON_ROOT_USER_NAME}"
   fi
 }
+
+export_variables_for_compose() {
+  export_compose_project_name &&
+    export_user_info
+}
