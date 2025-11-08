@@ -13,7 +13,6 @@ RUN curl -fsSL https://bun.com/install | bash
 
 # NOTE: The last build stage must named 'end'. Take a look in the build script
 #       attached to the build make target to get more insights
-
 FROM install_bun_js AS end
 ARG CREATE_NEXT_APP_MAJOR_VERSION=16
 ARG USER_HOME_DIR=/root

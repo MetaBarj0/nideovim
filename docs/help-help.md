@@ -78,7 +78,7 @@ imagination. Sky's the limit, checkout out the section about creating a `type`
 - It could be a `type` for Ethereum Virtual Machine compatible decentralized
   application projects.
 - It could be a `type` for your complete bundle of World of Warcraft server
-  project.
+  project. ==TODO==
 - It could be a `type` for any project you imagine.
 
 ## How can I use `nideovim`
