@@ -96,7 +96,8 @@ create_instance_signature() {
     -type f \
     -not -path '**/ancestor/**' \
     -not -name Makefile.env \
-    -not -name builddata |
+    -not -name builddata \
+    -not -name custom_external_override.yaml |
     sort |
     xargs md5sum |
     awk '{print $1}' |

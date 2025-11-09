@@ -60,6 +60,7 @@ write_toc() {
 # IDE TOOLING
 # AUTHENTICATION
 # AI INTEGRATION
+# EXTERNAL CUSTOM COMPOSE OVERRIDE FILE
 EOF
   write_type_toc_items
   cat <<EOF
@@ -269,6 +270,29 @@ ANTHROPIC_API_KEY ?= ${ANTHROPIC_API_KEY}
 EOF
 }
 
+write_external_custom_compose_override_file_description() {
+  cat <<EOF
+The path to an override compose file located anywhere on your filesystem.
+In this file you could specify anything specific to your project such as port
+exposure, externally built services, so one so forth...
+The content of the file must be compatible with the docker compose file
+standard specification (https://docs.docker.com/reference/compose-file/)
+default: $(get_default_value_for EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE)
+EOF
+}
+
+write_external_custom_compose_override_file() {
+  cat <<EOF
+################################################################################
+# EXTERNAL CUSTOM COMPOSE OVERRIDE FILE
+################################################################################
+
+$(write_external_custom_compose_override_file_description | comment)
+EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE ?= ${EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE}
+
+EOF
+}
+
 write_type_section_items() {
   if [ "$(type -t output_type_section_items)" != 'function' ]; then return; fi
 
@@ -296,6 +320,7 @@ write_env_file() {
       pthen write_ide_tooling |
       pthen write_authentication |
       pthen write_ai_integration |
+      pthen write_external_custom_compose_override_file |
       pthen write_type_section_items |
       pend >"$output_file_path"
 }
@@ -462,6 +487,19 @@ prompt_anthropic_api_key() {
   echo
 }
 
+prompt_external_custom_compose_override_file() {
+  write_external_custom_compose_override_file_description
+  echo
+
+  read -e -r -p "[${EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE}]: " external_custom_compose_override_file
+
+  if [ -n "${external_custom_compose_override_file}" ]; then
+    EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE="${external_custom_compose_override_file}"
+  fi
+
+  echo
+}
+
 prompt_ai_integration() {
   prompt_anthropic_api_key
 }
@@ -477,6 +515,7 @@ init_interactive() {
     prompt_ide_tooling &&
     prompt_authentication &&
     prompt_ai_integration &&
+    prompt_external_custom_compose_override_file &&
     prompt_type_sections &&
     write_env_file
 }

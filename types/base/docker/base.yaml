@@ -1,0 +1,88 @@
+secrets:
+  ssh_public_key_file:
+    file: ${SSH_PUBLIC_KEY_FILE:-~/.ssh/id_rsa.pub}
+  ssh_secret_key_file:
+    file: ${SSH_SECRET_KEY_FILE:-~/.ssh/id_rsa}
+services:
+  ide:
+    container_name: ${INSTANCE_ID}_${PROJECT_NAME:-nideovim}_ide_container
+    entrypoint: ${USER_HOME_DIR:-/root}/.bin/ide.entrypoint.sh
+    environment:
+      - ANTHROPIC_API_KEY
+      - INSTANCE_ID
+      - LC_ALL=en_US.UTF-8
+      - PROJECT_NAME
+      - TERM=xterm-256color
+      - USER_HOME_DIR
+      - VOLUME_DIR_NAME
+    hostname: ${CONTAINER_HOSTNAME:-nIDEovim}
+    image: ${INSTANCE_ID}_${PROJECT_NAME:-nideovim}_ide_image
+    init: true
+    post_start:
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/.config
+        user: root
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/.local
+        user: root
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/.npm-prefix
+        user: root
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/.ssh
+        user: root
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/tmp
+        user: root
+      - command: chown ${USER_NAME:-root}:${USER_NAME:-root} ${USER_HOME_DIR:-/root}/${VOLUME_DIR_NAME:-workspace}
+        user: root
+    secrets:
+      - source: ssh_public_key_file
+        target: /run/secrets/ssh_public_key_file
+      - source: ssh_secret_key_file
+        target: /run/secrets/ssh_secret_key_file
+    ulimits:
+      core:
+        soft: -1
+        hard: -1
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+      - type: tmpfs
+        target: /tmp
+      - type: tmpfs
+        target: ${USER_HOME_DIR:-/root}/tmp
+      - type: volume
+        source: user_config
+        target: ${USER_HOME_DIR:-/root}/.config
+        volume:
+          nocopy: false
+      - type: volume
+        source: user_local
+        target: ${USER_HOME_DIR:-/root}/.local
+        volume:
+          nocopy: false
+      - type: volume
+        source: user_npm_cache
+        target: ${USER_HOME_DIR:-/root}/.npm-cache
+        volume:
+          nocopy: false
+      - type: volume
+        source: user_npm_prefix
+        target: ${USER_HOME_DIR:-/root}/.npm-prefix
+        volume:
+          nocopy: false
+      - type: volume
+        source: user_ssh_dir
+        target: ${USER_HOME_DIR:-/root}/.ssh
+        volume:
+          nocopy: false
+      - type: volume
+        source: workspace
+        target: ${USER_HOME_DIR:-/root}/${VOLUME_DIR_NAME:-workspace}
+        volume:
+          nocopy: false
+volumes:
+  user_config:
+  user_local:
+  user_npm_cache:
+  user_npm_prefix:
+  user_ssh_dir:
+  workspace:

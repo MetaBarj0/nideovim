@@ -10,6 +10,7 @@ up() {
 
 main() {
   export_variables_for_compose &&
+    apply_external_custom_compose_override &&
     up
 }
 

@@ -16,3 +16,51 @@ export_variables_for_compose() {
   export_compose_project_name &&
     export_user_info
 }
+
+reset_external_custom_compose_override_file() {
+  local compose_dir &&
+    compose_dir="$(get_type_dir_from_current_ancestor_dir)/docker"
+  true >"${compose_dir}/custom_external_override.yaml"
+}
+
+check_external_custom_compose_override_file() {
+  if [ -z "${EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE}" ]; then return 0; fi
+
+  if [ ! -f "${EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE}" ] &&
+    [ ! -f "${ROOT_DIR}/${EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE}" ]; then
+    cat <<EOF >&2
+ERROR: ${EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE} file does not exist.
+Run 'make init' and ensure the path of the external override compose file is
+correctly set.
+EOF
+    return 1
+  fi
+}
+
+get_external_custom_compose_override_file() {
+  if [ -f "${EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE}" ]; then
+    echo "${EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE}"
+  else
+    echo "${ROOT_DIR}/${EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE}"
+  fi
+}
+
+sync_external_custom_override_compose_file_into_instance_docker_directory() {
+  if [ -z "${EXTERNAL_CUSTOM_COMPOSE_OVERRIDE_FILE}" ]; then return 0; fi
+
+  local external_custom_compose_override_file &&
+    external_custom_compose_override_file="$(get_external_custom_compose_override_file)"
+
+  local compose_dir &&
+    compose_dir="$(get_type_dir_from_current_ancestor_dir)/docker"
+
+  cp -f \
+    "${external_custom_compose_override_file}" \
+    "${compose_dir}/custom_external_override.yaml"
+}
+
+apply_external_custom_compose_override() {
+  reset_external_custom_compose_override_file &&
+    check_external_custom_compose_override_file &&
+    sync_external_custom_override_compose_file_into_instance_docker_directory
+}
