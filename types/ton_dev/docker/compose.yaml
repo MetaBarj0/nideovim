@@ -7,3 +7,4 @@ include:
   - path:
       - ../ancestor/docker/compose.yaml
       - override.yaml
+      - custom_external_override.yaml
