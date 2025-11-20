@@ -168,7 +168,7 @@ Once upon a time, you, working with `nideovim`.
         3. create scripts needed to run your `type`'s logic.
             - in the `scripts` directory of your `type`
             - a `build.sh` script to build the docker image of your `type`
-            - a `default.sh` scripts containing overrides from the `ancestor`
+            - a `defaults.sh` scripts containing overrides from the `ancestor`
               as well as variables and their default values that are related to
               your new `type`
             - a `init.sh` defining mandatory function used in the `instance`
@@ -186,6 +186,14 @@ Once upon a time, you, working with `nideovim`.
             - create both:
                 - a `compose.yaml` file.
                 - a `override.yaml` file.
+        5. create mandatory files in the `make` directory:
+            - `targets.Makefile` file defines mandatory internal targets
+              related to your `type`. In general, the content of this file is
+              always the same, take a look at existing `type`s to figure out.
+            - `variables.Makefile` file defines mandatory internal variables
+              used by your `type`'s targets. In general, the content of this
+              file is always the same, take a look at existing `type`s to
+              figure out.
 5. Take a look at the `next_react type` to get more insights.
 
 #### semi-automated process

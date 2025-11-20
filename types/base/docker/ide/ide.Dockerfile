@@ -356,5 +356,6 @@ ENV NPM_PREFIX_DIR=${USER_HOME_DIR}/.npm-prefix
 ENV NEOVIM_INSTALL_DIR=${USER_HOME_DIR}/.neovim
 ENV PATH=${PATH}:${NODEJS_INSTALL_DIR}/bin:${NPM_PREFIX_DIR}/bin:${NEOVIM_INSTALL_DIR}/bin:${USER_HOME_DIR}/.bin
 ENV EDITOR=nvim
+# will be inherited in all child types
 LABEL instance-id=${INSTANCE_ID}
 LABEL project-name=${PROJECT_NAME}
