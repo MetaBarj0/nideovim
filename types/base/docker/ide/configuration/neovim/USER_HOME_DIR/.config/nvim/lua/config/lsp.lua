@@ -7,6 +7,7 @@ require("conform").setup({
 		solidity = { "solidity_forge" },
 		json = { "biome" },
 		jsonc = { "biome" },
+		toml = { "taplo" },
 	},
 	formatters = {
 		solidity_forge = {
@@ -15,6 +16,11 @@ require("conform").setup({
 			args = { "fmt" },
 			cwd = require("conform.util").root_file({ "foundry.toml" }),
 			require_cwd = true,
+		},
+		taplo = {
+			stdin = false,
+			command = "taplo",
+			args = { "fmt" },
 		},
 	},
 })
