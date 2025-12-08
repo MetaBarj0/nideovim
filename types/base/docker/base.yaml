@@ -5,6 +5,10 @@ secrets:
     file: ${SSH_SECRET_KEY_FILE:-~/.ssh/id_rsa}
 services:
   ide:
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+      - NET_ADMIN
     container_name: ${INSTANCE_ID}_${PROJECT_NAME:-nideovim}_ide_container
     entrypoint: ${USER_HOME_DIR:-/root}/.bin/ide.entrypoint.sh
     environment:

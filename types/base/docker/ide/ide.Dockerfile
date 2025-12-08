@@ -13,7 +13,7 @@ RUN \
   --mount=type=cache,target=/var/cache/apt,sharing=locked \
   apt-get update \
   && apt-get install -y --no-install-recommends \
-  make git ca-certificates wget lsb-release gnupg curl bc
+  make git ca-certificates wget lsb-release gnupg curl bc strace
 
 FROM core_packages AS install_docker_cli
 # docker installation for debian
