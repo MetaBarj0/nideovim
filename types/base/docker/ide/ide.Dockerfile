@@ -17,7 +17,7 @@ RUN \
   apt-get update \
   && apt-get install -y --no-install-recommends \
   man-db make git git-man git-doc ca-certificates wget lsb-release gnupg curl \
-  bc strace
+  bc strace inotify-tools
 
 FROM core_packages AS install_docker_cli
 # docker installation for debian
@@ -32,7 +32,7 @@ RUN install -m 0755 -d /etc/apt/keyrings
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc \
   && chmod a+r /etc/apt/keyrings/docker.asc
-# hadolint ignore=SC1091
+# hadolint ignore=SC2046
 RUN echo \
   "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
   "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
@@ -248,6 +248,7 @@ RUN \
   golang
 USER ${USER_NAME}
 WORKDIR ${USER_HOME_DIR}
+# hadolint  ignore=DL3062
 RUN go install golang.org/dl/go1.23.3@latest
 WORKDIR ${USER_HOME_DIR}/go/bin
 RUN ./go1.23.3 download
