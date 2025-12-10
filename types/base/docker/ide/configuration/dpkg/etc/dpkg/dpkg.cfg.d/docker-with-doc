@@ -1,0 +1,3 @@
+# keep documentation
+path-include /usr/share/doc/*
+path-include /usr/share/man/*
