@@ -313,16 +313,17 @@ get_output_file_path() {
 
 write_env_file() {
   local output_file_path &&
-    output_file_path="$(get_output_file_path)" &&
-    write_toc |
-    pstart |
-      pthen write_project_properties |
-      pthen write_ide_tooling |
-      pthen write_authentication |
-      pthen write_ai_integration |
-      pthen write_external_custom_compose_override_file |
-      pthen write_type_section_items |
-      pend >"$output_file_path"
+    output_file_path="$(get_output_file_path)" ||
+    return $?
+
+  lift write_toc |
+    and_then write_project_properties |
+    and_then write_ide_tooling |
+    and_then write_authentication |
+    and_then write_ai_integration |
+    and_then write_external_custom_compose_override_file |
+    and_then write_type_section_items |
+    unlift >"$output_file_path"
 }
 
 prompt_project_name() {

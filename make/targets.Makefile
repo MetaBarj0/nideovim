@@ -3,5 +3,9 @@ instances/metadata:
 
 new: instances/metadata
 
+delete: instances/metadata
+
+set-default: instances/metadata
+
 %:
 	@. scripts/forward.sh $@

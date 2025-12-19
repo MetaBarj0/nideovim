@@ -7,7 +7,6 @@ main() {
 
   # NOTE: Argument passing does not work well with `.`, thus invoking bash -c ...
   bash -c ". $instance_dir/scripts/init.sh --defaults"
-
 }
 
 main

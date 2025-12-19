@@ -29,8 +29,9 @@ create_staging_directory() {
 }
 
 copy_type_to_staging_directory() {
-  local instance_id="$1"
-  local instance_type="$2"
+  local instance_id &&
+    local instance_type &&
+    read -r instance_id instance_type <<<"$1"
 
   cp -r types/"$instance_type" instances/staging/"$instance_id"
 
@@ -38,8 +39,9 @@ copy_type_to_staging_directory() {
 }
 
 create_ancestor_tree() {
-  local instance_id="$1"
-  local instance_type="$2"
+  local instance_id &&
+    local instance_type &&
+    read -r instance_id instance_type <<<"$1"
 
   # shellcheck source=/dev/null
   . types/"$instance_type"/metadata
@@ -101,20 +103,31 @@ sign_instance() {
     echo "$instance_id"
 }
 
-create_instance() {
-  local hint_instance_id="$1"
-  local instance_type="$2"
+create_instance() (
+  local hint_instance_id &&
+    local instance_type &&
+    IFS=, read -r hint_instance_id instance_type <<<"$1"
+
+  # shellcheck disable=SC2329
+  local_decl() {
+    local instance_id &&
+      instance_id="$1"
+    local id &&
+      id="$2"
+
+    echo "local ${instance_id} && ${instance_id}=${id};"
+  }
 
   # NOTE: create the instance and expose instance_id as a local variable that
   #       is forwarded to the caller. Avoid globals.
   eval "$(
     create_staging_directory "$hint_instance_id" "$instance_type" |
-      transform copy_type_to_staging_directory |
-      transform create_ancestor_tree |
-      transform commit_staging |
-      transform sign_instance |
-      to_var instance_id
+      transform_first copy_type_to_staging_directory |
+      transform_first create_ancestor_tree |
+      transform_first commit_staging |
+      transform_first sign_instance |
+      transform_last local_decl instance_id
   )"
 
   echo "$instance_id" "$instance_type"
-}
+)

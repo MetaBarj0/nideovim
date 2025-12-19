@@ -1,4 +1,6 @@
-. "$ROOT_DIR"/scripts/lib/funcshional.sh
+. "$ROOT_DIR"/scripts/lib/init-dependencies.sh
+
+init_dependencies
 
 get_type_directories() {
   find ./types -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
@@ -17,34 +19,49 @@ print_type_name() {
   echo "  - $dir_name"
 }
 
-print_type_info() {
-  local dir_name="$1"
+print_type_info() (
+  # shellcheck disable=SC2329
+  format_type_info() {
+    local dir_name &&
+      dir_name="$1"
+
+    echo
+    printf '+'
+    printf '%0.s-' $(seq 1 $((${#dir_name} + 2)))
+    echo '+'
+    printf "| %s |\n" "$dir_name"
+    printf '+'
+    printf '%0.s-' $(seq 1 $((${#dir_name} + 2)))
+    echo '+'
+    echo
+    echo "$TYPE_INFO"
+  }
+
+  local dir_name &&
+    dir_name="$1" &&
+    local acc &&
+    acc="$2"
 
   # shellcheck source=/dev/null
   . types/"$dir_name"/metadata
 
-  printf '+'
-  printf '%0.s-' $(seq 1 $((${#dir_name} + 2)))
-  echo '+'
-  printf "| %s |\n" "$dir_name"
-  printf '+'
-  printf '%0.s-' $(seq 1 $((${#dir_name} + 2)))
-  echo '+'
-  echo
-  echo "$TYPE_INFO"
-  echo
-}
+  if [ -n "$acc" ]; then
+    echo "${acc}"$'\n'"$(format_type_info "$dir_name")"
+  else
+    format_type_info "$dir_name"
+  fi
+)
 
 present_type_names() {
   get_type_directories |
-    filter has_correct_structure |
-    transform print_type_name
+    filter_first has_correct_structure |
+    transform_first print_type_name
 }
 
 present_types() {
   get_type_directories |
-    filter has_correct_structure |
-    transform print_type_info
+    filter_first has_correct_structure |
+    fold_first print_type_info ''
 }
 
 is_valid_type() {

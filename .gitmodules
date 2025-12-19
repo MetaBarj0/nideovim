@@ -1,0 +1,4 @@
+[submodule "scripts/lib/funcshional"]
+	path = scripts/lib/funcshional
+	url = https://github.com/MetaBarj0/funcshional.git
+	branch = main

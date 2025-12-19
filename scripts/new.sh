@@ -1,7 +1,6 @@
 . scripts/lib/type.sh
 . scripts/lib/instance.sh
 . scripts/lib/new.lib.sh
-. scripts/lib/funcshional.sh
 
 ask_instance_type() {
   local chosen_type &&
@@ -31,7 +30,6 @@ set_or_propose_default_instance() {
   local yes_or_no
 
   while read -e -r yes_or_no; do
-
     if [ "$yes_or_no" = 'y' ] ||
       [ "$yes_or_no" = 'Y' ]; then
       echo "DEFAULT_INSTANCE_ID=$(get_latest_instance_id)" >instances/metadata
@@ -68,16 +66,39 @@ clear_staging_directory() {
   rm -rf instances/staging
 }
 
-main() {
+main() (
+  # shellcheck disable=SC2329
+  local_decl() {
+    local instance_id &&
+      instance_id="$1"
+    local instance_type &&
+      instance_type="$2"
+
+    local id &&
+      local type &&
+      read -r id type <<<"$3"
+
+    echo "local ${instance_id} && ${instance_id}=${id}; local ${instance_type} && ${instance_type}=${type};"
+  }
+
+  # shellcheck disable=SC2329
+  format_create_instance_args() {
+    local instance_type &&
+      instance_type="$1"
+
+    echo ",$instance_type"
+  }
+
   # NOTE: Preparing local variables for future io in init_instance
   eval "$(
     clear_staging_directory &&
       ask_instance_type |
-      rtransform create_instance '' |
-        to_var instance_id instance_type
+      transform_first format_create_instance_args |
+        transform_last create_instance |
+        transform_last local_decl instance_id instance_type
   )" &&
     init_instance "$instance_id" "$instance_type" &&
     set_or_propose_default_instance
-}
+)
 
 main

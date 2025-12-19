@@ -1,5 +1,4 @@
 . scripts/lib/instance.sh
-. scripts/lib/funcshional.sh
 . scripts/lib/new.lib.sh
 
 is_instance_outdated() {
@@ -9,7 +8,7 @@ is_instance_outdated() {
 }
 
 report_error_instance_up_to_date() {
-  echo 'echo Nothing to migrate, the instance is up to date && exit 1'
+  echo "echo Nothing to migrate, the instance is up to date && return 1"
 
   return 1
 }
@@ -28,17 +27,19 @@ backup_runtime_files_in_staging() {
 }
 
 delete_instance_files() {
-  local instance_id="$1"
-  local instance_type="$2"
+  local instance_id &&
+    local instance_type &&
+    read -r instance_id instance_type <<<"$1"
 
   rm -rf instances/"$instance_id"
 
-  echo "$instance_id" "$instance_type"
+  echo "$instance_id,$instance_type"
 }
 
 restore_runtime_files_from_staging() {
-  local instance_id="$1"
-  local instance_type="$2"
+  local instance_id &&
+    local instance_type &&
+    read -r instance_id instance_type <<<"$1"
 
   cp instances/staging/migrate/"$instance_id"/Makefile.env \
     instances/staging/migrate/"$instance_id"/builddata \
@@ -48,8 +49,9 @@ restore_runtime_files_from_staging() {
 }
 
 clear_staging() {
-  local instance_id="$1"
-  local instance_type="$2"
+  local instance_id &&
+    local instance_type &&
+    read -r instance_id instance_type <<<"$1"
 
   rm -rf instances/staging/migrate/"$instance_id"
 
@@ -112,26 +114,42 @@ ask_for_instance_build() {
   fi
 }
 
-migrate_instance() {
-  local instance_id="$1"
+migrate_instance() (
+  # shellcheck disable=SC2030
+  local instance_id &&
+    instance_id="$1"
+
+  # shellcheck disable=SC2329
+  local_decl() {
+    # shellcheck disable=SC2030
+    local instance_type &&
+      instance_type="$1"
+    local type &&
+      type="$2"
+
+    echo "local ${instance_type} && ${instance_type}=${type};"
+  }
 
   eval "$(
     backup_runtime_files_in_staging "$instance_id" |
-      transform delete_instance_files |
-      transform create_instance |
-      transform restore_runtime_files_from_staging |
-      transform clear_staging |
-      to_var instance_type
+      transform_first delete_instance_files |
+      transform_first create_instance |
+      transform_first restore_runtime_files_from_staging |
+      transform_first clear_staging |
+      transform_last local_decl instance_type
   )"
 
   echo "$instance_id" "$instance_type"
-}
+)
 
 clear_staging_directory() {
   rm -rf instances/staging
 }
 
 ask_instance_to_migrate() {
+  try_get_default_instance_id
+
+  # shellcheck disable=SC2031
   local instance_id &&
     while ! is_instance_id_valid "$instance_id"; do
       read -e -r \
@@ -140,26 +158,49 @@ Which instance id do you want to migrate?
 $(present_instances)
 
 Id? " \
-        -i "$HINT_INSTANCE_ID" \
+        -i "$DEFAULT_INSTANCE_ID" \
         instance_id
     done &&
     echo "$instance_id"
 }
 
-main() {
+main() (
+  lift get_instance_directories |
+    and_then any |
+    or_else report_no_instance_error |
+    unlift ||
+    return $?
+
+  # shellcheck disable=SC2329
+  local_decl() {
+    local instance_id &&
+      instance_id="$1"
+    local instance_type &&
+      instance_type="$2"
+
+    local id &&
+      local type &&
+      read -r id type <<<"$3"
+
+    echo "local ${instance_id} && ${instance_id}=${id}; local ${instance_type} && ${instance_type}=${type}"
+  }
+
+  clear_staging_directory &&
+    local instance_id &&
+    instance_id=$(ask_instance_to_migrate)
+
   # NOTE: evaluate local variables before io
   eval "$(
-    clear_staging_directory &&
-      ask_instance_to_migrate |
-      pstart |
-        pthen filter is_instance_outdated |
-        pthen any_else report_error_instance_up_to_date |
-        pthen transform migrate_instance |
-        pthen to_var instance_id instance_type |
-        pend
+    echo "$instance_id" |
+      lift filter_first is_instance_outdated |
+      and_then any |
+      or_else report_error_instance_up_to_date |
+      and_then transform_first migrate_instance |
+      and_then transform_last local_decl instance_id instance_type |
+      unlift
   )" &&
     ask_for_instance_init "$instance_id" &&
     ask_for_instance_build "$instance_id" "$instance_type"
-}
+)
 
 main

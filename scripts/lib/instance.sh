@@ -1,4 +1,3 @@
-. "$ROOT_DIR"/scripts/lib/funcshional.sh
 . "$ROOT_DIR"/scripts/lib/type.sh
 
 get_instance_type() {
@@ -13,7 +12,6 @@ get_instance_type() {
 }
 
 is_instance_id_valid() {
-
   local instance_id=$1
 
   if [ -z "$instance_id" ]; then return 1; fi
@@ -54,8 +52,9 @@ get_longest_instance_type_name() {
 }
 
 get_project_name() {
-  local instance_id="$1"
-  local instance_type="$2"
+  local instance_id &&
+    local instance_type &&
+    read -r instance_id instance_type <<<"$1"
 
   mkdir -p instances/staging
 
@@ -79,15 +78,20 @@ output_instance_id_and_type() {
   echo "$instance_id $instance_type"
 }
 
-get_longest_project_name() {
+get_longest_project_name() (
+  # shellcheck disable=SC2329
+  length() {
+    printf '%s' "$1" | wc -m
+  }
+
   # NOTE: ensured in a previous pipeline there is at least one instance
   get_instance_directories |
-    transform output_instance_id_and_type |
-    transform get_project_name |
-    length |
+    transform_first output_instance_id_and_type |
+    transform_first get_project_name |
+    transform_first length |
     sort -nr |
     head -n 1
-}
+)
 
 create_instance_signature() {
   local instance_path="$1"
@@ -175,7 +179,7 @@ print_instance_info() {
     instance_type=$(get_instance_type "$instance_id")
 
   local project_name &&
-    project_name=$(get_project_name "$instance_id" "$instance_type")
+    project_name=$(get_project_name "$instance_id $instance_type")
 
   local prefix='| '
   if [ -n "$DEFAULT_INSTANCE_ID" ] &&
@@ -217,18 +221,19 @@ try_get_default_instance_id() {
   sanitize_metadata_if_applicable
 }
 
-present_instances() {
-  try_get_default_instance_id &&
-    get_instance_directories |
-    pstart |
-      pthen any_else report_no_instance_error |
-      pthen filter is_instance_id_valid |
-      pthen any_else report_no_instance_error |
-      pthen filter is_not_default_instance_id |
-      pthen push_front "$DEFAULT_INSTANCE_ID" |
-      pthen transform print_instance_info |
-      pend
-}
+present_instances() (
+  try_get_default_instance_id ||
+    return $?
+
+  lift get_instance_directories |
+    and_then any |
+    and_then filter_first is_instance_id_valid |
+    or_else report_no_instance_error |
+    and_then filter_first is_not_default_instance_id |
+    and_then prepend "$DEFAULT_INSTANCE_ID" |
+    and_then transform_first print_instance_info |
+    unlift
+)
 
 get_type_dir_from_current_ancestor_dir() {
   local type_dir &&

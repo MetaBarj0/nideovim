@@ -1,5 +1,4 @@
 . scripts/lib/instance.sh
-. scripts/lib/funcshional.sh
 
 format_list() {
   while read -r -e repository; do
@@ -59,7 +58,7 @@ ensure_instance_has_no_artifact_left() {
     instance_type="$(get_instance_type "$instance_id")"
 
   local instance_name &&
-    instance_name="$(get_project_name "$instance_id" "$instance_type")"
+    instance_name="$(get_project_name "$instance_id $instance_type")"
 
   ensure_instance_has_no_image_left "$instance_id" "$instance_name" &&
     ensure_instance_has_no_volume_left "$instance_id" "$instance_name"
@@ -79,32 +78,31 @@ try_delete_instance() {
 }
 
 ask_instance_to_delete() {
+  try_get_default_instance_id
+
   local instance_id
   while ! is_instance_id_valid "$instance_id"; do
-    echo
-    read -e -r \
-      -p "Which instance id do you want to delete? " \
-      -i "$DEFAULT_INSTANCE_ID" \
-      instance_id
+    present_instances &&
+      echo &&
+      read -e -r \
+        -p "Which instance id do you want to delete? " \
+        -i "$DEFAULT_INSTANCE_ID" \
+        instance_id
   done
 
   try_delete_instance "$instance_id"
 }
 
 ask_new_default_instance_if_applicable() {
-  if [ "$(get_instance_directories | count)" -eq 0 ]; then
+  if [ "$(get_instance_directories | wc -l)" -eq 0 ]; then
     return
   fi
 
-  (
-    unset -f main
-    . scripts/set-default.sh
-  )
+  make --no-print-directory set-default
 }
 
 main() {
-  present_instances &&
-    ask_instance_to_delete &&
+  ask_instance_to_delete &&
     ask_new_default_instance_if_applicable
 }
 

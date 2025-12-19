@@ -3,14 +3,10 @@
 set_default_instance_id() {
   local instance_id=$1
 
-  if [ ! -f "instances/metadata" ]; then
-    echo "DEFAULT_INSTANCE_ID=$instance_id" >instances/metadata
-
-    return
-  fi
+  . instances/metadata
 
   if [ -z "$DEFAULT_INSTANCE_ID" ]; then
-    echo "DEFAULT_INSTANCE_ID=$instance_id" >>instances/metadata
+    echo "DEFAULT_INSTANCE_ID=$instance_id" >instances/metadata
 
     return
   fi
@@ -19,21 +15,16 @@ set_default_instance_id() {
     -i'' instances/metadata
 }
 
-ask_for_new_default_instance() {
+main() {
   local instance_id
   while ! is_instance_id_valid "$instance_id"; do
-    read -e -r \
-      -p $'\nEnter the identifier of the new default instance: ' \
-      -i "$DEFAULT_INSTANCE_ID" \
-      instance_id
+    present_instances &&
+      read -e -r \
+        -p $'\nEnter the identifier of the new default instance: ' \
+        instance_id
   done
 
   set_default_instance_id "$instance_id"
-}
-
-main() {
-  present_instances &&
-    ask_for_new_default_instance
 }
 
 main

@@ -27,6 +27,9 @@ forward_target_to_instance() {
 ask_instance_to_interact_with() {
   local target=$1
 
+  try_get_default_instance_id ||
+    return $?
+
   local instance_id="$HINT_INSTANCE_ID"
   while ! is_instance_id_valid "$instance_id"; do
     echo
