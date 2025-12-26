@@ -40,6 +40,9 @@ services:
         target: /run/secrets/ssh_public_key_file
       - source: ssh_secret_key_file
         target: /run/secrets/ssh_secret_key_file
+    tmpfs:
+      - /tmp:exec,dev
+      - ${USER_HOME_DIR:-/root}/tmp:exec,dev
     ulimits:
       core:
         soft: -1
@@ -49,10 +52,6 @@ services:
         source: /var/run/docker.sock
         target: /var/run/docker.sock
         read_only: true
-      - type: tmpfs
-        target: /tmp
-      - type: tmpfs
-        target: ${USER_HOME_DIR:-/root}/tmp
       - type: volume
         source: user_config
         target: ${USER_HOME_DIR:-/root}/.config
