@@ -318,7 +318,17 @@ COPY --from=build_neovim \
   --chown=${USER_NAME}:${USER_NAME} \
   ${USER_HOME_DIR}/.neovim ${USER_HOME_DIR}/.neovim/
 
-FROM install_built_oss AS install_configuration
+FROM install_built_oss AS install_rakeup
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN curl -L \
+  https://raw.githubusercontent.com/MetaBarj0/rake/refs/heads/main/scripts/install \
+  | bash
+
+FROM install_rakeup AS install_configuration
 ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 USER ${USER_NAME}
@@ -330,7 +340,7 @@ RUN find -- configuration/*/USER_HOME_DIR \
   -exec cp -r {} ${USER_HOME_DIR} ';'
 
 # `end` stage name is important as it is the default target stage for a build
-FROM install_built_oss AS end
+FROM install_rakeup AS end
 ARG INSTANCE_ID=0
 ARG PROJECT_NAME=nideovim
 ARG USER_HOME_DIR=/root
