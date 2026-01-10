@@ -318,17 +318,7 @@ COPY --from=build_neovim \
   --chown=${USER_NAME}:${USER_NAME} \
   ${USER_HOME_DIR}/.neovim ${USER_HOME_DIR}/.neovim/
 
-FROM install_built_oss AS install_rakeup
-ARG USER_HOME_DIR=/root
-ARG USER_NAME=root
-USER ${USER_NAME}
-WORKDIR ${USER_HOME_DIR}
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN curl -L \
-  https://raw.githubusercontent.com/MetaBarj0/rake/refs/heads/main/scripts/install \
-  | bash
-
-FROM install_rakeup AS install_configuration
+FROM install_built_oss AS install_configuration
 ARG USER_HOME_DIR=/root
 ARG USER_NAME=root
 USER ${USER_NAME}
@@ -338,6 +328,19 @@ COPY configuration configuration/
 RUN find -- configuration/*/USER_HOME_DIR \
   -maxdepth 1 -not -name 'USER_HOME_DIR' \
   -exec cp -r {} ${USER_HOME_DIR} ';'
+
+FROM install_built_oss AS install_rakeup
+ARG USER_HOME_DIR=/root
+ARG USER_NAME=root
+USER ${USER_NAME}
+WORKDIR ${USER_HOME_DIR}
+COPY --from=install_configuration \
+  --chown=${USER_NAME}:${USER_NAME} \
+  ${USER_HOME_DIR}/.bashrc ${USER_HOME_DIR}/
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN curl -L \
+  https://raw.githubusercontent.com/MetaBarj0/rake/refs/heads/main/scripts/install \
+  | bash
 
 # `end` stage name is important as it is the default target stage for a build
 FROM install_rakeup AS end
@@ -349,9 +352,12 @@ ARG VOLUME_DIR_NAME=workspace
 WORKDIR ${USER_HOME_DIR}
 COPY ide.entrypoint.sh .bin/ide.entrypoint.sh
 USER ${USER_NAME}
-COPY --from=install_configuration \
+COPY --from=install_rakeup \
   --chown=${USER_NAME}:${USER_NAME} \
   ${USER_HOME_DIR}/.bashrc \
+  ${USER_HOME_DIR}/
+COPY --from=install_configuration \
+  --chown=${USER_NAME}:${USER_NAME} \
   ${USER_HOME_DIR}/.gitconfig \
   ${USER_HOME_DIR}/.lldbinit \
   ${USER_HOME_DIR}/.npmrc \
