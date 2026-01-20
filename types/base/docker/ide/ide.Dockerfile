@@ -339,7 +339,7 @@ COPY --from=install_configuration \
   ${USER_HOME_DIR}/.bashrc ${USER_HOME_DIR}/
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -L \
-  https://raw.githubusercontent.com/MetaBarj0/rake/refs/heads/main/scripts/install \
+  https://raw.githubusercontent.com/MetaBarj0/rake/refs/heads/main/.rake/scripts/install \
   | bash
 
 # `end` stage name is important as it is the default target stage for a build
